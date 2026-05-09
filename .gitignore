@@ -1,0 +1,9 @@
+# python
+
+
+# virtual environments
+.venv
+
+# environment variables
+.env.prod
+.env.dev
