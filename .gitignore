@@ -1,9 +1,9 @@
 # python
-
+__pycache__/
 
 # virtual environments
 .venv
 
 # environment variables
-.env.prod
-.env.dev
+.env
+.env.*
