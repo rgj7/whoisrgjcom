@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
+from src.auth.dependencies import CurrentUser
 from src.database import get_db
 from src.posts.exceptions import PostNotFound, PostSlugConflict
 from src.posts.models import Post
@@ -59,7 +60,7 @@ async def get_post(post_id: uuid.UUID, db: DbSession):
         status.HTTP_409_CONFLICT: {"description": "Slug already exists"},
     },
 )
-async def create_post(data: PostCreate, db: DbSession):
+async def create_post(data: PostCreate, user: CurrentUser, db: DbSession):
     post = Post(**data.model_dump())
     db.add(post)
     try:
@@ -82,7 +83,7 @@ async def create_post(data: PostCreate, db: DbSession):
         status.HTTP_409_CONFLICT: {"description": "Slug already exists"},
     },
 )
-async def update_post(post_id: uuid.UUID, data: PostUpdate, db: DbSession):
+async def update_post(post_id: uuid.UUID, data: PostUpdate, user: CurrentUser, db: DbSession):
     post = await db.get(Post, post_id)
     if not post:
         raise PostNotFound(str(post_id))
@@ -110,7 +111,7 @@ async def update_post(post_id: uuid.UUID, data: PostUpdate, db: DbSession):
         status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
     },
 )
-async def delete_post(post_id: uuid.UUID, db: DbSession):
+async def delete_post(post_id: uuid.UUID, user: CurrentUser, db: DbSession):
     post = await db.get(Post, post_id)
     if not post:
         raise PostNotFound(str(post_id))
