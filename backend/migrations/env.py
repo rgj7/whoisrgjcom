@@ -19,7 +19,9 @@ from src.config import settings  # noqa: E402
 # Populate the sqlalchemy.url that async_engine_from_config reads.
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
-from src.posts.models import Base  # noqa: E402
+from src.auth.models import User  # noqa: E402, F401
+from src.posts.models import Post  # noqa: E402, F401
+from src.models import Base  # noqa: E402
 
 target_metadata = Base.metadata
 
