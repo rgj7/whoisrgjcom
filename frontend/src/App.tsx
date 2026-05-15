@@ -1,9 +1,11 @@
 import AnimatedNavbar from "./components/AnimatedNavbar";
+import ThemeToggle from "./components/ThemeToggle";
 import "./index.css";
 
 export function App() {
   return (
     <div className="min-h-screen flex flex-col">
+      <ThemeToggle />
       <header className="w-full">
         <AnimatedNavbar />
       </header>
