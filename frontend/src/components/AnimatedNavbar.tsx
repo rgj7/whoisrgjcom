@@ -9,10 +9,10 @@ import GamepadIcon from "./ui/gamepad-icon";
 import HomeIcon from "./ui/home-icon";
 
 const navItems = [
-  { icon: HomeIcon, label: "home", href: "#" },
-  { icon: AirplaneIcon, label: "travels", href: "#" },
-  { icon: CodeIcon, label: "dev", href: "#" },
-  { icon: GamepadIcon, label: "gaming", href: "#" },
+  { icon: HomeIcon, label: "HOME", href: "#" },
+  { icon: AirplaneIcon, label: "TRAVELS", href: "#" },
+  { icon: CodeIcon, label: "DEV", href: "#" },
+  { icon: GamepadIcon, label: "GAMING", href: "#" },
 ];
 
 interface AnimatedNavbarProps {
@@ -24,7 +24,7 @@ const AnimatedNavbar = ({
   className,
   isAnimated = true,
 }: AnimatedNavbarProps) => {
-  const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTab] = useState("HOME");
 
   return (
     <div className={cn("flex w-full justify-center p-4", className)}>
