@@ -1,11 +1,15 @@
+import AnimatedNavbar from "./components/AnimatedNavbar";
 import "./index.css";
 
 export function App() {
   return (
-    <div className="container mx-auto p-8 text-center relative z-10">
-      <div className="flex justify-center items-center gap-8 mb-8">
-        whoisrgj.com
-      </div>
+    <div className="min-h-screen flex flex-col">
+      <header className="w-full">
+        <AnimatedNavbar />
+      </header>
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
+        {/* Content goes here */}
+      </main>
     </div>
   );
 }
