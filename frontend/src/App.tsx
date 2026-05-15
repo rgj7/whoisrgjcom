@@ -1,10 +1,10 @@
 import { useState } from "react";
 import AnimatedNavbar from "./components/AnimatedNavbar";
 import ThemeToggle from "./components/ThemeToggle";
-import { HomePage } from "./components/pages/HomePage";
-import { TravelsPage } from "./components/pages/TravelsPage";
-import { DevPage } from "./components/pages/DevPage";
-import { GamingPage } from "./components/pages/GamingPage";
+import { HomePage } from "./pages/HomePage";
+import { TravelsPage } from "./pages/TravelsPage";
+import { DevPage } from "./pages/DevPage";
+import { GamingPage } from "./pages/GamingPage";
 import "./index.css";
 
 const pageMap: Record<string, React.ComponentType> = {

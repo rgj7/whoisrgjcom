@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
-import BrightnessDownIcon from "./ui/brightness-down-icon";
-import MoonIcon from "./ui/moon-icon";
+import BrightnessDownIcon from "./ui/icons/brightness-down-icon";
+import MoonIcon from "./ui/icons/moon-icon";
 
 export function ThemeToggle() {
   const [dark, setDark] = useState(() =>

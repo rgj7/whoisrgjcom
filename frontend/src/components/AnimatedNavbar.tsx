@@ -3,10 +3,10 @@ import React, { useRef, useEffect } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { AnimatedIconHandle, AnimatedIconProps } from "./ui/types";
-import AirplaneIcon from "./ui/airplane-icon";
-import CodeIcon from "./ui/code-icon";
-import GamepadIcon from "./ui/gamepad-icon";
-import HomeIcon from "./ui/home-icon";
+import AirplaneIcon from "./ui/icons/airplane-icon";
+import CodeIcon from "./ui/icons/code-icon";
+import GamepadIcon from "./ui/icons/gamepad-icon";
+import HomeIcon from "./ui/icons/home-icon";
 
 const navItems = [
   { icon: HomeIcon, label: "HOME", href: "#" },
