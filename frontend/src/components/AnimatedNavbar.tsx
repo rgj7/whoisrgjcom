@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -18,23 +18,25 @@ const navItems = [
 interface AnimatedNavbarProps {
   className?: string;
   isAnimated?: boolean;
+  activeTab: string;
+  onTabChange: (label: string) => void;
 }
 
 const AnimatedNavbar = ({
   className,
   isAnimated = true,
+  activeTab,
+  onTabChange,
 }: AnimatedNavbarProps) => {
-  const [activeTab, setActiveTab] = useState("HOME");
-
   return (
     <div className={cn("flex w-full justify-center p-4", className)}>
-      <nav className="relative flex w-full max-w-2xl items-center justify-between">
+      <nav className="relative flex w-full items-center justify-center">
         {navItems.map((item) => (
           <NavItem
             key={item.label}
             {...item}
             isActive={activeTab === item.label}
-            onClick={() => setActiveTab(item.label)}
+            onClick={() => onTabChange(item.label)}
             isAnimated={isAnimated}
           />
         ))}
@@ -92,7 +94,7 @@ const NavItem = ({
       className={cn(
         "relative flex flex-1 items-center justify-center px-4 py-3 text-sm font-medium transition-colors sm:flex-none",
         isActive
-          ? "text-neutral-900 dark:text-white"
+          ? "text-white dark:text-white"
           : "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200",
       )}
       onMouseEnter={handleMouseEnter}
@@ -101,7 +103,7 @@ const NavItem = ({
       {isActive && (
         <motion.div
           layoutId="active-pill"
-          className="absolute inset-0 bg-white shadow-sm dark:bg-neutral-800"
+          className="absolute inset-0 bg-black shadow-sm dark:bg-neutral-800"
           transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         />
       )}

@@ -1,16 +1,32 @@
+import { useState } from "react";
 import AnimatedNavbar from "./components/AnimatedNavbar";
 import ThemeToggle from "./components/ThemeToggle";
+import { HomePage } from "./components/pages/HomePage";
+import { TravelsPage } from "./components/pages/TravelsPage";
+import { DevPage } from "./components/pages/DevPage";
+import { GamingPage } from "./components/pages/GamingPage";
 import "./index.css";
 
+const pageMap: Record<string, React.ComponentType> = {
+  HOME: HomePage,
+  TRAVELS: TravelsPage,
+  DEV: DevPage,
+  GAMING: GamingPage,
+};
+
 export function App() {
+  const [activeTab, setActiveTab] = useState("HOME");
+
+  const ActivePage = pageMap[activeTab] ?? HomePage;
+
   return (
     <div className="min-h-screen flex flex-col">
       <ThemeToggle />
       <header className="w-full">
-        <AnimatedNavbar />
+        <AnimatedNavbar activeTab={activeTab} onTabChange={setActiveTab} />
       </header>
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
-        {/* Content goes here */}
+      <main className="mx-auto flex-1 w-full max-w-5xl px-4 py-8">
+        <ActivePage />
       </main>
     </div>
   );
