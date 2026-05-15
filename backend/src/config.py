@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
 
-from backend.constants import Environment
+from src.constants import Environment
 
 class Config(BaseSettings):
     DATABASE_URL: str

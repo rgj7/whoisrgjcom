@@ -1,0 +1,52 @@
+import uuid
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
+
+from zoneinfo import ZoneInfo
+
+
+class PostBase(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    title: str = Field(min_length=1, max_length=255)
+    slug: str = Field(min_length=1, max_length=255, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+    content: str = Field(min_length=1)
+    excerpt: str | None = Field(default=None, max_length=500)
+
+
+class PostCreate(PostBase):
+    """Schema for creating a new post."""
+    pass
+
+
+class PostUpdate(BaseModel):
+    """Schema for updating an existing post (all fields optional)."""
+    title: str | None = Field(default=None, min_length=1, max_length=255)
+    slug: str | None = Field(
+        default=None, min_length=1, max_length=255, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    )
+    content: str | None = Field(default=None, min_length=1)
+    excerpt: str | None = Field(default=None, max_length=500)
+
+
+class PostResponse(PostBase):
+    """Schema returned by the API."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+
+    @field_serializer("id")
+    def serialize_id(self, value: uuid.UUID, _info):
+        return str(value)
+
+    @field_serializer("created_at", "updated_at")
+    def serialize_dt(self, value: datetime, _info):
+        if isinstance(value, datetime):
+            if value.tzinfo is None:
+                value = value.replace(tzinfo=ZoneInfo("UTC"))
+            return value.strftime("%Y-%m-%dT%H:%M:%S%z")
+        return value

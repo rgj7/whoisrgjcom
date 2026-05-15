@@ -7,3 +7,9 @@ __pycache__/
 # environment variables
 .env
 .env.*
+
+# tools
+.ruff_cache/
+
+# local databases
+*.db

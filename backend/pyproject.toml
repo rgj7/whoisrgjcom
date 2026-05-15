@@ -4,8 +4,10 @@ version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
     "aiosqlite>=0.22.1",
+    "alembic>=1.18.4",
     "asyncpg>=0.31.0",
     "fastapi[standard]>=0.136.1",
     "httpx>=0.28.1",
+    "ruff>=0.15.13",
     "sqlalchemy>=2.0.49",
 ]
