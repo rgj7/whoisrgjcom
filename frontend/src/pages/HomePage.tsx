@@ -1,22 +1,37 @@
-const posts = [
-  { title: "Getting Started With Something New", date: "May 10, 2025", excerpt: "A placeholder post about kicking off a new project and the lessons learned along the way." },
-  { title: "Thoughts On Design Systems", date: "May 5, 2025", excerpt: "Why consistency matters and how a well-built design system saves time at scale." },
-  { title: "Building In Public", date: "Apr 28, 2025", excerpt: "The highs and lows of sharing your work openly and what the community teaches you." },
-  { title: "The Art of Code Reviews", date: "Apr 20, 2025", excerpt: "How to give feedback that improves code without discouraging the author." },
-  { title: "Rethinking Productivity", date: "Apr 12, 2025", excerpt: "Why doing less often leads to better outcomes than chasing busyness." },
-];
+import { Link } from "react-router-dom";
+import { usePosts } from "../lib/api";
 
 export function HomePage() {
+  const { data: posts, isLoading, error } = usePosts();
+
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Blog Posts — 2 columns */}
         <div className="space-y-6 lg:col-span-2">
           <h2 className="text-xl font-semibold">Latest Posts</h2>
-          {posts.map((post) => (
-            <article key={post.title} className="space-y-1 border-b pb-4">
-              <h3 className="font-medium">{post.title}</h3>
-              <time className="text-xs text-muted-foreground">{post.date}</time>
+          {isLoading && <p className="text-sm text-muted-foreground">Loading posts…</p>}
+          {error && <p className="text-sm text-red-500">{error.message}</p>}
+          {!isLoading && !error && !posts?.length && (
+            <p className="text-sm text-muted-foreground">No posts yet.</p>
+          )}
+          {posts?.map((post) => (
+            <article key={post.id} className="space-y-1 border-b pb-4">
+              <h3 className="font-medium">
+                <Link
+                  to={`/posts/${post.slug}`}
+                  className="hover:underline"
+                >
+                  {post.title}
+                </Link>
+              </h3>
+              <time className="text-xs text-muted-foreground">
+                {new Date(post.created_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </time>
               <p className="text-sm text-muted-foreground">{post.excerpt}</p>
             </article>
           ))}
