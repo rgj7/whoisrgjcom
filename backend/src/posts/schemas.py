@@ -1,9 +1,8 @@
 import uuid
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer
-
-from zoneinfo import ZoneInfo
 
 
 class PostBase(BaseModel):
@@ -40,11 +39,11 @@ class PostResponse(PostBase):
     updated_at: datetime
 
     @field_serializer("id")
-    def serialize_id(self, value: uuid.UUID, _info):
+    def serialize_id(self, value: uuid.UUID):
         return str(value)
 
     @field_serializer("created_at", "updated_at")
-    def serialize_dt(self, value: datetime, _info):
+    def serialize_dt(self, value: datetime):
         if isinstance(value, datetime):
             if value.tzinfo is None:
                 value = value.replace(tzinfo=ZoneInfo("UTC"))

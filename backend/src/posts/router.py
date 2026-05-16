@@ -3,8 +3,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import CurrentUser
 from src.database import get_db
@@ -30,6 +30,24 @@ DbSession = Annotated[AsyncSession, Depends(get_db)]
 async def list_posts(db: DbSession):
     result = await db.execute(select(Post).order_by(Post.created_at.desc()))
     return result.scalars().all()
+
+
+@router.get(
+    "/slug/{slug}",
+    response_model=PostResponse,
+    summary="Get a post by slug",
+    description="Returns a single post by its slug.",
+    responses={
+        status.HTTP_200_OK: {"description": "Successful response"},
+        status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
+    },
+)
+async def get_post_by_slug(slug: str, db: DbSession):
+    result = await db.execute(select(Post).where(Post.slug == slug))
+    post = result.scalar_one_or_none()
+    if not post:
+        raise PostNotFound(slug)
+    return post
 
 
 @router.get(
