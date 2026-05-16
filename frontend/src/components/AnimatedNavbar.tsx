@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -9,25 +10,23 @@ import GamepadIcon from "./ui/icons/gamepad-icon";
 import HomeIcon from "./ui/icons/home-icon";
 
 const navItems = [
-  { icon: HomeIcon, label: "HOME", href: "#" },
-  { icon: AirplaneIcon, label: "TRAVELS", href: "#" },
-  { icon: CodeIcon, label: "DEV", href: "#" },
-  { icon: GamepadIcon, label: "GAMING", href: "#" },
+  { icon: HomeIcon, label: "HOME", to: "/" },
+  { icon: AirplaneIcon, label: "TRAVELS", to: "/travels" },
+  { icon: CodeIcon, label: "DEV", to: "/dev" },
+  { icon: GamepadIcon, label: "GAMING", to: "/gaming" },
 ];
 
 interface AnimatedNavbarProps {
   className?: string;
   isAnimated?: boolean;
-  activeTab: string;
-  onTabChange: (label: string) => void;
 }
 
 const AnimatedNavbar = ({
   className,
   isAnimated = true,
-  activeTab,
-  onTabChange,
 }: AnimatedNavbarProps) => {
+  const location = useLocation();
+
   return (
     <div className={cn("flex w-full justify-center p-4", className)}>
       <nav className="relative flex w-full items-center justify-center">
@@ -35,8 +34,11 @@ const AnimatedNavbar = ({
           <NavItem
             key={item.label}
             {...item}
-            isActive={activeTab === item.label}
-            onClick={() => onTabChange(item.label)}
+            isActive={
+              item.to === "/"
+                ? location.pathname === "/"
+                : location.pathname.startsWith(item.to)
+            }
             isAnimated={isAnimated}
           />
         ))}
@@ -50,18 +52,16 @@ interface NavItemProps {
     AnimatedIconProps & React.RefAttributes<AnimatedIconHandle>
   >;
   label: string;
-  href: string;
+  to: string;
   isActive: boolean;
-  onClick: () => void;
   isAnimated: boolean;
 }
 
 const NavItem = ({
   icon: Icon,
   label,
-  href,
+  to,
   isActive,
-  onClick,
   isAnimated,
 }: NavItemProps) => {
   const iconRef = useRef<AnimatedIconHandle>(null);
@@ -85,12 +85,8 @@ const NavItem = ({
   }, [isAnimated]);
 
   return (
-    <a
-      href={href}
-      onClick={(e) => {
-        e.preventDefault();
-        onClick();
-      }}
+    <Link
+      to={to}
       className={cn(
         "relative flex flex-1 items-center justify-center px-4 py-3 text-sm font-medium transition-colors sm:flex-none",
         isActive
@@ -115,7 +111,7 @@ const NavItem = ({
         />
         <span className="hidden sm:inline-block">{label}</span>
       </div>
-    </a>
+    </Link>
   );
 };
 
