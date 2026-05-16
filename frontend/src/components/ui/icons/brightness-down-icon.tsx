@@ -1,5 +1,5 @@
-import { forwardRef, useImperativeHandle } from "react";
-import type { AnimatedIconHandle, AnimatedIconProps } from "./types";
+import { forwardRef, useImperativeHandle, useCallback } from "react";
+import type { AnimatedIconHandle, AnimatedIconProps } from "../types";
 import { motion, useAnimate } from "motion/react";
 
 const BrightnessDownIcon = forwardRef<AnimatedIconHandle, AnimatedIconProps>(
@@ -9,44 +9,41 @@ const BrightnessDownIcon = forwardRef<AnimatedIconHandle, AnimatedIconProps>(
   ) => {
     const [scope, animate] = useAnimate();
 
-    const start = async () => {
-      animate(
-        ".sun-center",
-        { scale: [1, 0.8, 1] },
-        { duration: 0.4, ease: "easeInOut" },
-      );
-      animate(
-        ".sun-rays",
-        { opacity: [1, 0.4, 1] },
-        { duration: 0.5, ease: "easeInOut" },
-      );
-    };
+    const start = useCallback(
+      async () => {
+        animate(
+          ".sun-center",
+          { scale: [1, 0.8, 1] },
+          { duration: 0.4, ease: "easeInOut" },
+        );
+        animate(
+          ".sun-rays",
+          { opacity: [1, 0.4, 1] },
+          { duration: 0.5, ease: "easeInOut" },
+        );
+      },
+      [animate],
+    );
 
-    const stop = () => {
+    const stop = useCallback(() => {
       animate(".sun-center", { scale: 1 }, { duration: 0.2, ease: "easeOut" });
       animate(".sun-rays", { opacity: 1 }, { duration: 0.2, ease: "easeOut" });
-    };
+    }, [animate]);
 
-    useImperativeHandle(ref, () => {
-      return {
+    useImperativeHandle(
+      ref,
+      () => ({
         startAnimation: start,
         stopAnimation: stop,
-      };
-    });
-
-    const handleHoverStart = () => {
-      start();
-    };
-
-    const handleHoverEnd = () => {
-      stop();
-    };
+      }),
+      [start, stop],
+    );
 
     return (
       <motion.div
         ref={scope}
-        onHoverStart={handleHoverStart}
-        onHoverEnd={handleHoverEnd}
+        onHoverStart={start}
+        onHoverEnd={stop}
         className={`inline-flex cursor-pointer items-center justify-center ${className}`}
       >
         <svg
