@@ -1,12 +1,13 @@
 import { useParams, Link } from "react-router-dom";
 import { usePostBySlug } from "../lib/api";
+import { DefaultLayout } from "../components/ui/default-layout";
 
 export function PostPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: post, isLoading, error } = usePostBySlug(slug!);
 
   return (
-    <div className="space-y-6">
+    <DefaultLayout>
       <Link
         to="/"
         className="text-sm text-muted-foreground hover:text-foreground"
@@ -36,7 +37,7 @@ export function PostPage() {
           </div>
         </article>
       )}
-    </div>
+    </DefaultLayout>
   );
 }
 

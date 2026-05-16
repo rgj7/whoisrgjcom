@@ -1,11 +1,13 @@
+import { DefaultLayout } from "../components/ui/default-layout";
+
 export function DevPage() {
   return (
-    <div className="space-y-4">
+    <DefaultLayout>
       <h1 className="text-3xl font-bold">Dev</h1>
       <p className="text-muted-foreground">
         Projects, code snippets, and development notes.
       </p>
-    </div>
+    </DefaultLayout>
   );
 }
 

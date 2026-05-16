@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { usePosts } from "../lib/api";
+import { DefaultLayout } from "../components/ui/default-layout";
 
 export function HomePage() {
   const { data: posts, isLoading, error } = usePosts();
 
   return (
-    <div className="space-y-8">
+    <DefaultLayout>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Blog Posts — 2 columns */}
         <div className="space-y-6 lg:col-span-2">
@@ -76,7 +77,7 @@ export function HomePage() {
           </div>
         </aside>
       </div>
-    </div>
+    </DefaultLayout>
   );
 }
 
