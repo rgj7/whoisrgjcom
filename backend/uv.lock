@@ -957,7 +957,7 @@ wheels = [
 [[package]]
 name = "whoisrgj-backend"
 version = "0.1.0"
-source = { editable = "." }
+source = { virtual = "." }
 dependencies = [
     { name = "aiosqlite" },
     { name = "alembic" },
