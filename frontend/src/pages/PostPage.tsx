@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { usePostBySlug } from "@/lib/api";
-import { DefaultLayout } from "@/components/ui/default-layout";
+import { DefaultLayout } from "@/layouts/DefaultLayout";
 
 export function PostPage() {
   const { slug } = useParams<{ slug: string }>();

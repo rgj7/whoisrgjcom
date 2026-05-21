@@ -1,4 +1,4 @@
-import { DefaultLayout } from "@/components/ui/default-layout";
+import { DefaultLayout } from "@/layouts/DefaultLayout";
 
 export function GamingPage() {
   return (

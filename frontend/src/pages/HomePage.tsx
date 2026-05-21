@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { usePosts } from "@/lib/api";
-import { DefaultLayout } from "@/components/ui/default-layout";
+import { DefaultLayout } from "@/layouts/DefaultLayout";
 
 export function HomePage() {
   const { data: posts, isLoading, error } = usePosts();
