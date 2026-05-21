@@ -7,12 +7,14 @@ import { DevPage } from "./pages/DevPage";
 import { GamingPage } from "./pages/GamingPage";
 import { PostPage } from "./pages/PostPage";
 import { LoginPage } from "./pages/LoginPage";
+import { DashboardPage } from "./pages/admin/DashboardPage";
 import "./index.css";
 
 export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
       <Route
         path="/*"
         element={

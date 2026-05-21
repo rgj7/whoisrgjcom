@@ -46,3 +46,39 @@ export function usePostBySlug(slug: string) {
     dedupingInterval: 0,
   });
 }
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+}
+
+export interface CurrentUser {
+  id: string;
+  username: string;
+  email: string;
+  is_superuser: boolean;
+  created_at: string;
+}
+
+export async function login(username: string, password: string): Promise<LoginResponse> {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Login failed: ${res.status} ${body}`);
+  }
+  return res.json();
+}
+
+export async function getMe(token: string): Promise<CurrentUser> {
+  const res = await fetch(`${API_BASE}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    throw new Error(`Token validation failed: ${res.status}`);
+  }
+  return res.json();
+}
