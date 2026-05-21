@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   FileTextIcon,
@@ -12,8 +12,9 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
+  SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -38,6 +39,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const location = useLocation();
   const [username, setUsername] = useState<string | null>(null);
 
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    navigate("/login");
+  }, [navigate]);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -48,44 +55,36 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     getMe(token)
       .then((user) => setUsername(user.username))
       .catch(handleLogout);
-  }, [navigate]);
-
-  function handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    navigate("/login");
-  }
+  }, [navigate, handleLogout]);
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <Sidebar collapsible="icon">
+    <div className="min-h-screen">
+      <SidebarProvider>
+        <Sidebar variant="inset" collapsible="icon">
           <SidebarHeader className="px-4 py-3">
-            <h2 className="text-sm font-semibold">Admin</h2>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {navItems.map((item) => {
-                    const isActive = location.pathname === item.url;
-                    return (
-                      <SidebarMenuItem key={item.url}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={isActive}
-                          tooltip={item.title}
-                        >
-                          <a href={item.url}>
-                            <item.icon />
-                            <span>{item.title}</span>
-                          </a>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
+              <SidebarMenu>
+                {navItems.map((item) => {
+                  const isActive = location.pathname === item.url;
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={item.title}
+                      >
+                        <a href={item.url}>
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>
           <SidebarFooter className="p-4">
@@ -95,7 +94,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   onClick={handleLogout}
                   tooltip="Logout"
                 >
-                  <LogOutIcon />
+                  <LogOutIcon data-icon />
                   <span>Logout</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -103,16 +102,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </SidebarFooter>
           <SidebarRail />
         </Sidebar>
-        <main className="flex flex-1 flex-col overflow-hidden">
+        <SidebarInset className="mx-auto max-w-5xl">
           <header className="flex h-12 items-center gap-2 border-b px-4">
             <SidebarTrigger />
           </header>
           <div className="flex-1 overflow-auto p-6">
             {children ?? <Outlet />}
           </div>
-        </main>
-      </div>
-    </SidebarProvider>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   );
 }
 
