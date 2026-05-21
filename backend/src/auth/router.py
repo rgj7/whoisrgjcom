@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.auth.dependencies import create_access_token
+from src.auth.dependencies import CurrentUser, create_access_token
 from src.auth.exceptions import InvalidCredentials
 from src.auth.schemas import LoginRequest, LoginResponse, UserCreate, UserResponse
 from src.auth.service import create_user, get_user_by_username, verify_password
@@ -12,6 +12,18 @@ from src.database import get_db
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
+
+
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    summary="Get current user info",
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {"description": "Invalid or missing token"},
+    },
+)
+async def get_current_user_info(user: CurrentUser):
+    return user
 
 
 @router.post(
