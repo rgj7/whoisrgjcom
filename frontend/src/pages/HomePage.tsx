@@ -13,10 +13,10 @@ export function HomePage() {
           <h2 className="text-xl font-semibold">Latest Posts</h2>
           {isLoading && <p className="text-sm text-muted-foreground">Loading posts…</p>}
           {error && <p className="text-sm text-red-500">{error.message}</p>}
-          {!isLoading && !error && !posts?.length && (
+          {!isLoading && !error && !posts?.items?.length && (
             <p className="text-sm text-muted-foreground">No posts yet.</p>
           )}
-          {posts?.map((post) => (
+          {posts?.items?.map((post) => (
             <article key={post.id} className="space-y-1 border-b pb-4">
               <h3 className="font-medium">
                 <Link
