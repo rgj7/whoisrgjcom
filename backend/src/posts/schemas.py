@@ -12,6 +12,7 @@ class PostBase(BaseModel):
     slug: str = Field(min_length=1, max_length=255, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
     content: str = Field(min_length=1)
     excerpt: str | None = Field(default=None, max_length=500)
+    published: bool = True
 
 
 class PostCreate(PostBase):
@@ -27,12 +28,13 @@ class PostUpdate(BaseModel):
     )
     content: str | None = Field(default=None, min_length=1)
     excerpt: str | None = Field(default=None, max_length=500)
+    published: bool | None = None
 
 
 class PostResponse(PostBase):
     """Schema returned by the API."""
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, from_attributes=True)
 
     id: uuid.UUID
     created_at: datetime
@@ -49,3 +51,13 @@ class PostResponse(PostBase):
                 value = value.replace(tzinfo=ZoneInfo("UTC"))
             return value.strftime("%Y-%m-%dT%H:%M:%S%z")
         return value
+
+
+class PaginatedPosts(BaseModel):
+    """Paginated response for the posts list."""
+
+    items: list[PostResponse]
+    total: int
+    page: int
+    limit: int
+    pages: int
