@@ -10,7 +10,7 @@ class PostBase(BaseModel):
 
     title: str = Field(min_length=1, max_length=255)
     slug: str = Field(min_length=1, max_length=255, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-    content: str = Field(min_length=1)
+    content: dict = Field(...)
     excerpt: str | None = Field(default=None, max_length=500)
     published: bool = True
 
@@ -26,7 +26,7 @@ class PostUpdate(BaseModel):
     slug: str | None = Field(
         default=None, min_length=1, max_length=255, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
     )
-    content: str | None = Field(default=None, min_length=1)
+    content: dict | None = Field(default=None)
     excerpt: str | None = Field(default=None, max_length=500)
     published: bool | None = None
 
