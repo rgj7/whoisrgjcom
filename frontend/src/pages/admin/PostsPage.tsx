@@ -41,6 +41,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { deleteAdminPost, updateAdminPost, useAdminPosts } from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PAGE_SIZE = 10;
 
@@ -76,25 +77,42 @@ export function PostsPage() {
         </Button>
       </div>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
       {error && (
         <p className="text-sm text-red-500">{error.message}</p>
       )}
 
-      {!isLoading && !error && (
+      {!error && (
         <>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="w-48">Date</TableHead>
+                <TableHead className="w-32">Status</TableHead>
                 <TableHead className="w-20">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data?.items.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <Skeleton className="h-4 w-48" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-40" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-20" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-4" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : data?.items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
                     No posts yet.
                   </TableCell>
                 </TableRow>
@@ -109,7 +127,10 @@ export function PostsPage() {
                         {post.title}
                       </Link>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="w-48 whitespace-nowrap text-muted-foreground">
+                      {new Date(post.created_at).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="w-32">
                       <Badge
                         variant={post.published ? "default" : "secondary"}
                         className="cursor-pointer"

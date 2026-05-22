@@ -66,7 +66,7 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: 
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-6">
             <div className="flex flex-1 flex-col gap-2">
               <Label htmlFor="title">Title</Label>
               <Input
@@ -81,7 +81,7 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: 
               <Label>Status</Label>
               <Badge
                 variant={published ? "default" : "secondary"}
-                className="cursor-pointer"
+                className="cursor-pointer px-3 py-1 text-sm"
                 onClick={() => setPublished((p) => !p)}
               >
                 {published ? "Published" : "Unpublished"}
@@ -93,6 +93,9 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: 
         <div className="flex flex-col gap-2">
           <Label htmlFor="slug">Slug</Label>
           <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={generateSlug} disabled={!title.trim()}>
+              Generate
+            </Button>
             <Input
               id="slug"
               value={slug}
@@ -101,9 +104,6 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: 
               required
               className="flex-1"
             />
-            <Button type="button" variant="outline" onClick={generateSlug} disabled={!title.trim()}>
-              Generate
-            </Button>
           </div>
         </div>
 
