@@ -1,4 +1,5 @@
 import useSWR from "swr";
+import type { JSONContent } from "@tiptap/react";
 
 export const API_BASE =
   typeof window !== "undefined"
@@ -9,7 +10,7 @@ export interface Post {
   id: string;
   title: string;
   slug: string;
-  content: string;
+  content: JSONContent;
   excerpt: string | null;
   published: boolean;
   created_at: string;

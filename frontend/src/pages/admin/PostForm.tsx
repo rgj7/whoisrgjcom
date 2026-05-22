@@ -1,15 +1,17 @@
 import { useState } from "react";
+import type { JSONContent } from "@tiptap/react";
 
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
 
 export interface PostFormData {
   title: string;
   slug: string;
-  content: string;
+  content: JSONContent | string;
   excerpt: string | null;
   published: boolean;
 }
@@ -24,13 +26,25 @@ export interface PostFormProps {
 export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: PostFormProps) {
   const [title, setTitle] = useState(initialData?.title ?? "");
   const [slug, setSlug] = useState(initialData?.slug ?? "");
-  const [content, setContent] = useState(initialData?.content ?? "");
+  const [content, setContent] = useState<JSONContent | string>(initialData?.content ?? "");
   const [excerpt, setExcerpt] = useState(initialData?.excerpt ?? "");
   const [published, setPublished] = useState(initialData?.published ?? true);
 
+  const generateSlug = () => {
+    if (!title.trim()) return;
+    setSlug(
+      title
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/[\s_]+/g, "-")
+        .replace(/-+/g, "-"),
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !slug.trim() || !content.trim()) return;
+    if (!title.trim() || !slug.trim() || content === "" || (typeof content === "string" && !content.trim())) return;
 
     await onSubmit({
       title: title.trim(),
@@ -52,37 +66,45 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: 
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Post title"
-            required
-          />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
+            <div className="flex flex-1 flex-col gap-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Post title"
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2 sm:w-36">
+              <Label>Status</Label>
+              <Badge
+                variant={published ? "default" : "secondary"}
+                className="cursor-pointer"
+                onClick={() => setPublished((p) => !p)}
+              >
+                {published ? "Published" : "Unpublished"}
+              </Badge>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col gap-2">
           <Label htmlFor="slug">Slug</Label>
-          <Input
-            id="slug"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder="post-slug"
-            required
-          />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="content">Content</Label>
-          <Textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Post content"
-            rows={12}
-            required
-          />
+          <div className="flex gap-2">
+            <Input
+              id="slug"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder="post-slug"
+              required
+              className="flex-1"
+            />
+            <Button type="button" variant="outline" onClick={generateSlug} disabled={!title.trim()}>
+              Generate
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-col gap-2">
@@ -96,15 +118,12 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: 
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <Label>Status</Label>
-          <Badge
-            variant={published ? "default" : "secondary"}
-            className="cursor-pointer"
-            onClick={() => setPublished((p) => !p)}
-          >
-            {published ? "Published" : "Unpublished"}
-          </Badge>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="content">Content</Label>
+          <SimpleEditor
+            content={content}
+            onUpdate={setContent}
+          />
         </div>
 
         <Button type="submit" disabled={isSubmitting}>

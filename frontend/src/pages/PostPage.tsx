@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { usePostBySlug } from "@/lib/api";
 import { DefaultLayout } from "@/layouts/DefaultLayout";
+import { renderPostContent } from "@/lib/tiptap-renderer";
 
 export function PostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -28,12 +29,8 @@ export function PostPage() {
               day: "numeric",
             })}
           </time>
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            {post.content.split("\n\n").map((paragraph, i) => (
-              <p key={i} className="text-muted-foreground">
-                {paragraph}
-              </p>
-            ))}
+          <div className="max-w-none">
+            {renderPostContent(post.content)}
           </div>
         </article>
       )}
