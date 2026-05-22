@@ -1,12 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import CurrentUser, create_access_token
 from src.auth.exceptions import InvalidCredentials
-from src.auth.schemas import LoginRequest, LoginResponse, UserCreate, UserResponse
-from src.auth.service import create_user, get_user_by_username, verify_password
+from src.auth.schemas import LoginRequest, LoginResponse, UserResponse
+from src.auth.service import get_user_by_username, verify_password
 from src.database import get_db
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -23,29 +23,6 @@ DbSession = Annotated[AsyncSession, Depends(get_db)]
     },
 )
 async def get_current_user_info(user: CurrentUser):
-    return user
-
-
-@router.post(
-    "/register",
-    response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Register a new user",
-    responses={
-        status.HTTP_409_CONFLICT: {"description": "Username or email already exists"},
-    },
-)
-async def register(data: UserCreate, db: DbSession):
-    from sqlalchemy.exc import IntegrityError
-
-    try:
-        user = await create_user(db, data)
-    except IntegrityError:
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Username or email already exists",
-        )
     return user
 
 
