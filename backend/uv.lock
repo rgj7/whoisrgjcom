@@ -1053,7 +1053,7 @@ wheels = [
 ]
 
 [[package]]
-name = "whoisrgj-backend"
+name = "whoisrgjcom-backend"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

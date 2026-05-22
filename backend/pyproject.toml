@@ -1,5 +1,5 @@
 [project]
-name = "whoisrgj-backend"
+name = "whoisrgjcom-backend"
 version = "0.1.0"
 description = "whoisrgj.com API — FastAPI backend"
 requires-python = ">=3.14"
