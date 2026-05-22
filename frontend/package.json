@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "bun --hot src/index.ts",
     "start": "NODE_ENV=production bun src/index.ts",
-    "build": "bun run build.ts"
+    "build": "bun run build.ts",
+    "lint": "biome check .",
+    "format": "biome format --write ."
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
@@ -53,6 +55,7 @@
     "@types/lodash.throttle": "^4.1.9",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "biome": "^0.3.3",
     "sass": "^1.99.0",
     "sass-embedded": "^1.99.0",
     "tailwindcss": "^4.1.11"
