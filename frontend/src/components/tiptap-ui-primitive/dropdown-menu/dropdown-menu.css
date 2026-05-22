@@ -148,3 +148,24 @@
   align-items: center;
   gap: 0.25rem;
 }
+
+/* --- Item indicator (check mark) --- */
+.tiptap-dropdown-menu-item-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  flex-shrink: 0;
+}
+
+.tiptap-dropdown-menu-item-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tiptap-dropdown-menu-item-check-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--tt-dropdown-menu-text-color);
+}

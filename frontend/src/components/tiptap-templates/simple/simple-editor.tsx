@@ -14,6 +14,9 @@ import { Highlight } from "@tiptap/extension-highlight"
 import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
 import { Selection } from "@tiptap/extensions"
+import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight"
+import { createLowlight } from "lowlight"
+import { all as allGrammars } from "lowlight"
 
 // --- UI Primitives ---
 import { Button } from "@/components/tiptap-ui-primitive/button"
@@ -41,6 +44,7 @@ import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button"
 import { ListDropdownMenu } from "@/components/tiptap-ui/list-dropdown-menu"
 import { BlockquoteButton } from "@/components/tiptap-ui/blockquote-button"
 import { CodeBlockButton } from "@/components/tiptap-ui/code-block-button"
+import { LanguageDropdown } from "@/components/tiptap-ui/code-block-language"
 import {
   ColorHighlightPopover,
   ColorHighlightPopoverContent,
@@ -102,6 +106,9 @@ const MainToolbarContent = ({
         />
         <BlockquoteButton />
         <CodeBlockButton />
+        <LanguageDropdown
+          languages={Object.keys(allGrammars)}
+        />
       </ToolbarGroup>
 
       <ToolbarSeparator />
@@ -203,6 +210,7 @@ export function SimpleEditor({
         autocomplete: "off",
         autocorrect: "off",
         autocapitalize: "off",
+        spellcheck: "true",
         "aria-label": "Main content area, start typing to enter text.",
         class: "simple-editor",
       },
@@ -214,6 +222,14 @@ export function SimpleEditor({
           openOnClick: false,
           enableClickSelection: true,
         },
+        codeBlock: false,
+      }),
+      CodeBlockLowlight.configure({
+        lowlight: (() => {
+          const ll = createLowlight()
+          ll.register(allGrammars)
+          return ll
+        })(),
       }),
       HorizontalRule,
       TextAlign.configure({ types: ["heading", "paragraph"] }),

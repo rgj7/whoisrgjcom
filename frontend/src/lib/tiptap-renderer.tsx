@@ -7,29 +7,71 @@ import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
+import { Node } from "@tiptap/core";
 import { HorizontalRule } from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension";
-import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension";
-import { MAX_FILE_SIZE, handleImageUpload } from "@/lib/tiptap-utils";
+import { createElement } from "react";
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { Extensions, JSONContent } from "@tiptap/core";
+import hljs from "highlight.js";
 
-// Import editor node CSS so rendered post content gets the same styles
-import "@/components/tiptap-node/blockquote-node/blockquote-node.css";
-import "@/components/tiptap-node/code-block-node/code-block-node.css";
-import "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node.css";
-import "@/components/tiptap-node/list-node/list-node.css";
-import "@/components/tiptap-node/image-node/image-node.css";
-import "@/components/tiptap-node/heading-node/heading-node.css";
-import "@/components/tiptap-node/paragraph-node/paragraph-node.css";
+const CodeBlockNoRender = Node.create({
+  name: "codeBlock",
+  content: "text*",
+  group: "block",
+  code: true,
+  defining: true,
+
+  addAttributes() {
+    return {
+      language: {
+        default: null,
+        parseHTML: element => {
+          const codeEl = element.querySelector("code");
+          if (!codeEl) return null;
+          const classList = [...codeEl.classList];
+          const match = classList.find(c => c.startsWith("language-"));
+          return match ? match.replace("language-", "") : null;
+        },
+        rendered: false,
+      },
+    };
+  },
+});
+
+function highlightCodeBlock(props: any): React.ReactNode {
+  const node = props.node;
+  const text = node.textContent || "";
+  const language = node.attrs?.language || "plaintext";
+  const highlighted =
+    language === "plaintext"
+      ? text
+      : hljs.highlight(text, { language }).value;
+
+  if (language === "plaintext") {
+    return createElement(
+      "pre",
+      { className: "tiptap-code-block" },
+      createElement("code", { className: "hljs", "data-language": language }, text),
+    );
+  }
+
+  return createElement(
+    "pre",
+    { className: "tiptap-code-block" },
+    createElement("code", { className: "hljs", "data-language": language, dangerouslySetInnerHTML: { __html: highlighted } }),
+  );
+}
 
 const postExtensions: Extensions = [
   StarterKit.configure({
     horizontalRule: false,
+    codeBlock: false,
     link: {
       openOnClick: false,
       enableClickSelection: true,
     },
   }),
+  CodeBlockNoRender,
   HorizontalRule,
   TextAlign.configure({ types: ["heading", "paragraph"] }),
   TaskList,
@@ -40,13 +82,6 @@ const postExtensions: Extensions = [
   Superscript,
   Subscript,
   Selection,
-  ImageUploadNode.configure({
-    accept: "image/*",
-    maxSize: MAX_FILE_SIZE,
-    limit: 3,
-    upload: handleImageUpload,
-    onError: (error) => console.error("Upload failed:", error),
-  }),
 ] as Extensions;
 
 export function renderPostContent(content: JSONContent): React.ReactNode {
@@ -55,6 +90,11 @@ export function renderPostContent(content: JSONContent): React.ReactNode {
       {renderToReactElement({
         extensions: postExtensions,
         content,
+        options: {
+          nodeMapping: {
+            codeBlock: (node: any) => highlightCodeBlock(node),
+          },
+        },
       })}
     </div>
   );
