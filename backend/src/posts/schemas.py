@@ -17,15 +17,15 @@ class PostBase(BaseModel):
 
 class PostCreate(PostBase):
     """Schema for creating a new post."""
+
     pass
 
 
 class PostUpdate(BaseModel):
     """Schema for updating an existing post (all fields optional)."""
+
     title: str | None = Field(default=None, min_length=1, max_length=255)
-    slug: str | None = Field(
-        default=None, min_length=1, max_length=255, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
-    )
+    slug: str | None = Field(default=None, min_length=1, max_length=255, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
     content: dict | None = Field(default=None)
     excerpt: str | None = Field(default=None, max_length=500)
     published: bool | None = None

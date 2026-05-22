@@ -29,20 +29,14 @@ async def list_posts(
     limit: int = Query(default=10, ge=1, le=100),
 ):
     # Get total count of published posts
-    count_result = await db.execute(
-        select(func.count(Post.id)).where(Post.published)
-    )
+    count_result = await db.execute(select(func.count(Post.id)).where(Post.published))
     total = count_result.scalar() or 0
     pages = ceil(total / limit) if total > 0 else 0
 
     # Get paginated published items
     offset = (page - 1) * limit
     result = await db.execute(
-        select(Post)
-        .where(Post.published)
-        .order_by(Post.created_at.desc())
-        .offset(offset)
-        .limit(limit)
+        select(Post).where(Post.published).order_by(Post.created_at.desc()).offset(offset).limit(limit)
     )
     items = [PostResponse.model_validate(post) for post in result.scalars().all()]
 
@@ -65,9 +59,7 @@ async def list_posts(
     },
 )
 async def get_post_by_slug(slug: str, db: DbSession):
-    result = await db.execute(
-        select(Post).where(Post.slug == slug, Post.published)
-    )
+    result = await db.execute(select(Post).where(Post.slug == slug, Post.published))
     post = result.scalar_one_or_none()
     if not post:
         raise PostNotFound(slug)

@@ -23,7 +23,7 @@ DbSession = Annotated[AsyncSession, Depends(get_db)]
     "/",
     response_model=PaginatedPosts,
     summary="List all posts (paginated)",
-    description="Returns a paginated list of all posts (including unpublished) ordered by creation date (newest first).",
+    description="Returns a paginated list of all posts (including unpublished) ordered by creation date.",
 )
 async def list_posts(
     db: DbSession,
@@ -37,12 +37,7 @@ async def list_posts(
 
     # Get paginated items
     offset = (page - 1) * limit
-    result = await db.execute(
-        select(Post)
-        .order_by(Post.created_at.desc())
-        .offset(offset)
-        .limit(limit)
-    )
+    result = await db.execute(select(Post).order_by(Post.created_at.desc()).offset(offset).limit(limit))
     items = [PostResponse.model_validate(post) for post in result.scalars().all()]
 
     return PaginatedPosts(

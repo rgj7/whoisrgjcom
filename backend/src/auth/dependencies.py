@@ -1,3 +1,4 @@
+from datetime import UTC
 from typing import Annotated
 from uuid import UUID
 
@@ -36,14 +37,14 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 def create_access_token(user_id: str, minutes: int | None = None) -> str:
     """Create a JWT access token for the given user ID."""
-    from datetime import datetime, timedelta, timezone
-
-    from src.auth.config import auth_settings
+    from datetime import datetime, timedelta
 
     import jwt
 
+    from src.auth.config import auth_settings
+
     exp_minutes = minutes or auth_settings.JWT_EXP_MINUTES
-    expire = datetime.now(timezone.utc) + timedelta(minutes=exp_minutes)
+    expire = datetime.now(UTC) + timedelta(minutes=exp_minutes)
     return jwt.encode(
         {
             "sub": user_id,

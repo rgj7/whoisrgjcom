@@ -16,11 +16,8 @@ os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
 os.environ.setdefault("ENVIRONMENT", "dev")
 
 # Import after env vars are set
-import asyncio
 
-import pytest
 import pytest_asyncio
-
 from sqlalchemy.ext.asyncio import create_async_engine
 
 # Import models so Base.metadata knows about all tables

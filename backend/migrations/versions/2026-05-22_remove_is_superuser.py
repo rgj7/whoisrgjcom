@@ -4,9 +4,9 @@ Revision ID: b1c2d3e4f5a6
 Revises: a1b2c3d4e5f6
 Create Date: 2026-05-22
 """
-from alembic import op
-import sqlalchemy as sa
 
+import sqlalchemy as sa
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "b1c2d3e4f5a6"
