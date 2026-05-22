@@ -8,7 +8,6 @@ class UserCreate(BaseModel):
     username: str = Field(min_length=1, max_length=128)
     email: EmailStr
     password: str = Field(min_length=8)
-    is_superuser: bool = False
 
 
 class UserResponse(BaseModel):
@@ -17,7 +16,6 @@ class UserResponse(BaseModel):
     id: uuid.UUID
     username: str
     email: str
-    is_superuser: bool
     created_at: datetime
 
 

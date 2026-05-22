@@ -1,6 +1,6 @@
-import bcrypt
 import uuid
 
+import bcrypt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,7 +23,6 @@ async def create_user(db: AsyncSession, data: UserCreate) -> User:
         username=data.username,
         email=data.email,
         hashed_password=hash_password(data.password),
-        is_superuser=data.is_superuser,
     )
     db.add(user)
     await db.commit()
