@@ -38,6 +38,7 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 def create_access_token(user_id: str, minutes: int | None = None) -> str:
     """Create a JWT access token for the given user ID."""
     from datetime import datetime, timedelta
+    from uuid import uuid4
 
     import jwt
 
@@ -49,6 +50,7 @@ def create_access_token(user_id: str, minutes: int | None = None) -> str:
         {
             "sub": user_id,
             "exp": expire,
+            "jti": str(uuid4()),
         },
         auth_settings.JWT_SECRET,
         algorithm=auth_settings.JWT_ALG,

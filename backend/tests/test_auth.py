@@ -1,18 +1,13 @@
+"""Tests for the auth domain: /auth/me and /auth/login."""
+
+import uuid
+
+import httpx
 import pytest
 import pytest_asyncio
-from collections.abc import AsyncGenerator
+from sqlalchemy import text
 
-from httpx import AsyncClient, ASGITransport
-
-from src.main import app
-
-
-@pytest_asyncio.fixture
-async def client() -> AsyncGenerator[AsyncClient, None]:
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
-
+from src.auth.service import hash_password
 
 # --- Helpers ---
 
@@ -23,117 +18,147 @@ VALID_USER = {
 }
 
 
-def make_user_data(
-    username: str = "testuser",
-    email: str = "test@example.com",
-    password: str = "password123",
-    is_superuser: bool = False,
-) -> dict:
-    return {
-        "username": username,
-        "email": email,
-        "password": password,
-        "is_superuser": is_superuser,
-    }
+async def _create_test_user(
+    engine,
+    user_id: str,
+    username: str,
+    email: str,
+    password: str,
+) -> None:
+    """Create a test user in the database using a shared engine."""
+    async with engine.connect() as conn:
+        await conn.execute(
+            text(
+                'INSERT INTO "user" (id, username, email, hashed_password, created_at) '
+                "VALUES (:id, :username, :email, :hashed_password, NOW())"
+            ),
+            {
+                "id": user_id,
+                "username": username,
+                "email": email,
+                "hashed_password": hash_password(password),
+            },
+        )
+        await conn.commit()
 
 
-# --- POST /auth/register ---
+@pytest_asyncio.fixture
+async def auth_token(client: httpx.AsyncClient, test_engine) -> str:
+    """Create a user via the DB and return an auth token."""
+    user_id = str(uuid.uuid4())
+    await _create_test_user(
+        test_engine,
+        user_id,
+        VALID_USER["username"],
+        VALID_USER["email"],
+        VALID_USER["password"],
+    )
+
+    login_resp = await client.post(
+        "/auth/login",
+        json={"username": VALID_USER["username"], "password": VALID_USER["password"]},
+    )
+    assert login_resp.status_code == 200
+    return login_resp.json()["access_token"]
+
+
+async def _login_as(client: httpx.AsyncClient, username: str, password: str) -> str:
+    """Log in and return the access token (caller must ensure user exists)."""
+    resp = await client.post(
+        "/auth/login",
+        json={"username": username, "password": password},
+    )
+    assert resp.status_code == 200
+    return resp.json()["access_token"]
+
+
+# ------------------------------------------------------------------
+# GET /auth/me
+# ------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_register_success(client: AsyncClient) -> None:
-    resp = await client.post("/auth/register", json=VALID_USER)
-    assert resp.status_code == 201
+async def test_me_returns_user_info(client: httpx.AsyncClient, auth_token: str) -> None:
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    resp = await client.get("/auth/me", headers=headers)
+    assert resp.status_code == 200
     data = resp.json()
     assert data["username"] == "testuser"
     assert data["email"] == "test@example.com"
-    assert data["is_superuser"] is False
     assert "id" in data
     assert "created_at" in data
-    # Password must never be in the response
-    assert "password" not in data
-    assert "hashed_password" not in data
+    assert "is_superuser" not in data
 
 
 @pytest.mark.asyncio
-async def test_register_superuser(client: AsyncClient) -> None:
-    data = make_user_data(is_superuser=True)
-    resp = await client.post("/auth/register", json=data)
-    assert resp.status_code == 201
-    assert resp.json()["is_superuser"] is True
+async def test_me_unauthorized(client: httpx.AsyncClient) -> None:
+    resp = await client.get("/auth/me")
+    assert resp.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_register_duplicate_username(client: AsyncClient) -> None:
-    resp1 = await client.post("/auth/register", json=make_user_data(username="unique"))
-    assert resp1.status_code == 201
+async def test_me_invalid_token(client: httpx.AsyncClient) -> None:
+    headers = {"Authorization": "Bearer invalid-token"}
+    resp = await client.get("/auth/me", headers=headers)
+    assert resp.status_code == 401
 
-    resp2 = await client.post(
-        "/auth/register",
-        json=make_user_data(username="unique", email="other@example.com"),
+
+@pytest.mark.asyncio
+async def test_me_expired_token(client: httpx.AsyncClient, test_engine) -> None:
+    """A token with 0-minute expiry should be rejected."""
+    from src.auth.dependencies import create_access_token
+
+    await _create_test_user(
+        test_engine,
+        str(uuid.uuid4()),
+        "shortlived",
+        "short@lived.com",
+        "somepassword",
     )
-    assert resp2.status_code == 409
+    token = create_access_token("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", minutes=0)
+
+    headers = {"Authorization": f"Bearer {token}"}
+    resp = await client.get("/auth/me", headers=headers)
+    assert resp.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_register_duplicate_email(client: AsyncClient) -> None:
-    resp1 = await client.post("/auth/register", json=make_user_data(email="same@example.com"))
-    assert resp1.status_code == 201
-
-    resp2 = await client.post(
-        "/auth/register",
-        json=make_user_data(username="otheruser", email="same@example.com"),
+async def test_me_cross_user_token(client: httpx.AsyncClient, test_engine) -> None:
+    """Any valid token should work — no ownership checks on /me."""
+    await _create_test_user(
+        test_engine,
+        str(uuid.uuid4()),
+        "otheruser",
+        "other@example.com",
+        "correctpassword",
     )
-    assert resp2.status_code == 409
+    other_token = await _login_as(client, "otheruser", "correctpassword")
+
+    headers = {"Authorization": f"Bearer {other_token}"}
+    resp = await client.get("/auth/me", headers=headers)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["username"] == "otheruser"
 
 
 @pytest.mark.asyncio
-async def test_register_missing_username(client: AsyncClient) -> None:
-    payload = make_user_data()
-    del payload["username"]
-    resp = await client.post("/auth/register", json=payload)
-    assert resp.status_code == 422
+async def test_me_missing_bearer_prefix(client: httpx.AsyncClient, auth_token: str) -> None:
+    """Token without 'Bearer ' prefix should be rejected."""
+    headers = {"Authorization": auth_token}
+    resp = await client.get("/auth/me", headers=headers)
+    assert resp.status_code == 401
+
+
+# ------------------------------------------------------------------
+# POST /auth/login
+# ------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_register_missing_email(client: AsyncClient) -> None:
-    payload = make_user_data()
-    del payload["email"]
-    resp = await client.post("/auth/register", json=payload)
-    assert resp.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_register_invalid_email(client: AsyncClient) -> None:
-    resp = await client.post("/auth/register", json=make_user_data(email="not-an-email"))
-    assert resp.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_register_password_too_short(client: AsyncClient) -> None:
-    resp = await client.post("/auth/register", json=make_user_data(password="short"))
-    assert resp.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_register_missing_password(client: AsyncClient) -> None:
-    payload = make_user_data()
-    del payload["password"]
-    resp = await client.post("/auth/register", json=payload)
-    assert resp.status_code == 422
-
-
-# --- POST /auth/login ---
-
-
-@pytest.mark.asyncio
-async def test_login_success(client: AsyncClient) -> None:
-    # Register first
-    await client.post("/auth/register", json=VALID_USER)
-
+async def test_login_success(client: httpx.AsyncClient, auth_token: str) -> None:
     resp = await client.post(
         "/auth/login",
-        json={"username": "testuser", "password": "password123"},
+        json={"username": VALID_USER["username"], "password": VALID_USER["password"]},
     )
     assert resp.status_code == 200
     data = resp.json()
@@ -142,18 +167,47 @@ async def test_login_success(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_login_wrong_password(client: AsyncClient) -> None:
-    await client.post("/auth/register", json=VALID_USER)
+async def test_login_returns_unique_token(client: httpx.AsyncClient, test_engine) -> None:
+    """Each login call should produce a distinct token."""
+    await _create_test_user(
+        test_engine,
+        str(uuid.uuid4()),
+        VALID_USER["username"],
+        VALID_USER["email"],
+        VALID_USER["password"],
+    )
+    resp1 = await client.post(
+        "/auth/login",
+        json={"username": VALID_USER["username"], "password": VALID_USER["password"]},
+    )
+    resp2 = await client.post(
+        "/auth/login",
+        json={"username": VALID_USER["username"], "password": VALID_USER["password"]},
+    )
+    assert resp1.status_code == 200
+    assert resp2.status_code == 200
+    assert resp1.json()["access_token"] != resp2.json()["access_token"]
+
+
+@pytest.mark.asyncio
+async def test_login_wrong_password(client: httpx.AsyncClient, test_engine) -> None:
+    await _create_test_user(
+        test_engine,
+        str(uuid.uuid4()),
+        "otheruser",
+        "other@example.com",
+        "correctpassword",
+    )
 
     resp = await client.post(
         "/auth/login",
-        json={"username": "testuser", "password": "wrongpassword"},
+        json={"username": "otheruser", "password": "wrongpassword"},
     )
     assert resp.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_login_nonexistent_user(client: AsyncClient) -> None:
+async def test_login_nonexistent_user(client: httpx.AsyncClient) -> None:
     resp = await client.post(
         "/auth/login",
         json={"username": "nobody", "password": "password123"},
@@ -162,32 +216,67 @@ async def test_login_nonexistent_user(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_login_missing_username(client: AsyncClient) -> None:
+async def test_login_missing_username(client: httpx.AsyncClient) -> None:
     resp = await client.post("/auth/login", json={"password": "password123"})
     assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_login_missing_password(client: AsyncClient) -> None:
+async def test_login_missing_password(client: httpx.AsyncClient) -> None:
     resp = await client.post("/auth/login", json={"username": "testuser"})
     assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_login_token_can_authenticate(client: AsyncClient) -> None:
-    """Register, login, then use the token to access a protected endpoint."""
-    await client.post("/auth/register", json=VALID_USER)
+async def test_login_empty_body(client: httpx.AsyncClient) -> None:
+    resp = await client.post("/auth/login", json={})
+    assert resp.status_code == 422
 
-    login_resp = await client.post(
-        "/auth/login",
-        json={"username": "testuser", "password": "password123"},
+
+@pytest.mark.asyncio
+async def test_login_whitespace_username(client: httpx.AsyncClient, test_engine) -> None:
+    await _create_test_user(
+        test_engine,
+        str(uuid.uuid4()),
+        VALID_USER["username"],
+        VALID_USER["email"],
+        VALID_USER["password"],
     )
-    assert login_resp.status_code == 200
-    token = login_resp.json()["access_token"]
+    resp = await client.post(
+        "/auth/login",
+        json={"username": "   ", "password": VALID_USER["password"]},
+    )
+    assert resp.status_code == 401
 
-    # Use the token on a protected endpoint (posts require auth via get_current_user)
-    headers = {"Authorization": f"Bearer {token}"}
-    resp = await client.post("/posts/", json={"title": "Auth test", "slug": "auth-test", "content": "Hello"})
-    # This might fail if posts don't require auth; just verify the token flows
-    # The key test is that we got a valid token back
-    assert token  # token is non-empty string
+
+@pytest.mark.asyncio
+async def test_login_extra_fields_ignored(client: httpx.AsyncClient, test_engine) -> None:
+    """Extra fields in the request body should be silently ignored."""
+    await _create_test_user(
+        test_engine,
+        str(uuid.uuid4()),
+        VALID_USER["username"],
+        VALID_USER["email"],
+        VALID_USER["password"],
+    )
+    resp = await client.post(
+        "/auth/login",
+        json={
+            "username": VALID_USER["username"],
+            "password": VALID_USER["password"],
+            "extra": "ignored",
+        },
+    )
+    assert resp.status_code == 200
+    assert "access_token" in resp.json()
+
+
+@pytest.mark.asyncio
+async def test_login_non_json_content_type(client: httpx.AsyncClient) -> None:
+    """Request without JSON content-type should be rejected by FastAPI."""
+    resp = await client.post(
+        "/auth/login",
+        content=b'{"username":"testuser","password":"password123"}',
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert resp.status_code == 422

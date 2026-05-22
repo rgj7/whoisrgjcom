@@ -2,6 +2,7 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 
 from src.auth.config import auth_settings
+from src.auth.exceptions import InvalidCredentials
 
 
 def decode_token(token: str) -> dict:
@@ -11,5 +12,5 @@ def decode_token(token: str) -> dict:
             auth_settings.JWT_SECRET,
             algorithms=[auth_settings.JWT_ALG],
         )
-    except InvalidTokenError as exc:
-        raise InvalidTokenError(f"Token validation failed: {exc}") from exc
+    except InvalidTokenError:
+        raise InvalidCredentials()
