@@ -7,7 +7,7 @@
 - **Styling**: Tailwind CSS v4 + shadcn/ui (New York style, neutral base, CSS variables)
 - **Routing**: React Router DOM v7
 - **Data Fetching**: SWR (with 5s request timeout)
-- **Rich Text Editor**: Tiptap v3 (starter-kit + multiple extensions)
+- **Rich Text Editor**: Tiptap v3 (starter-kit + multiple extensions) — see `.agents/skills/tiptap/SKILL.md` for guidance
 - **Icons**: Lucide React
 - **Animations**: motion (Framer Motion)
 - **Build**: Custom `build.ts` via `Bun.build()` with `bun-plugin-tailwind`
@@ -77,6 +77,8 @@ Admin routes are protected: `AdminLayout` checks for a `token` in localStorage a
 - `CurrentUser` — `{ id, username, email, is_superuser, created_at }`
 
 ### Tiptap setup
+
+> **Companion**: For Tiptap-specific guidance (extensions, editor config, best practices), see `.agents/skills/tiptap/SKILL.md`.
 
 **Editor (admin)**: Full Tiptap editor with extensions for headings, lists, code blocks, images, links, text alignment, highlights, subscript/superscript, etc.
 
@@ -161,6 +163,8 @@ The backend is a FastAPI app with:
 API runs on port 8000. Frontend connects via relative host (`window.location.hostname:8000`).
 
 ## Notes for Agents
+
+- For Tiptap-specific guidance (extensions, editor config, best practices), read `.agents/skills/tiptap/SKILL.md` before working on editor-related code.
 
 - Don't import from `node_modules` directly — use path aliases (`@/`)
 - Tiptap content is JSON, not HTML. Use `renderPostContent()` from `@/lib/tiptap-renderer` to render
