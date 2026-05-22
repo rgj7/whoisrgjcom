@@ -17,8 +17,6 @@ os.environ.setdefault("AUTH_JWT_EXP_MINUTES", "60")
 # Global settings (override only if not already set via .env)
 os.environ.setdefault("ENVIRONMENT", "dev")
 
-# Import after env vars are set
-
 from collections.abc import AsyncGenerator
 
 import httpx
@@ -56,7 +54,7 @@ async def test_engine():
 
 
 @pytest_asyncio.fixture
-async def client() -> AsyncGenerator:
+async def client() -> AsyncGenerator[httpx.AsyncClient]:
     transport = ASGITransport(app=app)
     ac = httpx.AsyncClient(transport=transport, base_url="http://test")
     try:
