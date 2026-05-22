@@ -16,6 +16,9 @@ dependencies = [
     "sqlalchemy>=2.0.49",
 ]
 
+[project.scripts]
+create-admin = "src.scripts.create_admin:main"
+
 [project.optional-dependencies]
 test = [
     "pytest>=8.0",
