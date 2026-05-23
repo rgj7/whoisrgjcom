@@ -9,26 +9,29 @@ export function PostPage() {
 
   return (
     <DefaultLayout>
-      <Link
-        to="/"
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        ← Back to posts
-      </Link>
+      <div className="mb-6">
+        <Link
+          to="/"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          ← Back to posts
+        </Link>
+      </div>
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading post…</p>}
       {error && <p className="text-sm text-red-500">{error.message}</p>}
 
       {post && (
-        <article className="space-y-4">
-          <h1 className="text-3xl font-bold">{post.title}</h1>
-          <time className="text-sm text-muted-foreground">
+        <article className="space-y-6">
+          <time className="mb-4 block text-sm text-muted-foreground">
             {new Date(post.created_at).toLocaleDateString("en-US", {
+              weekday: "long",
               year: "numeric",
               month: "long",
               day: "numeric",
             })}
           </time>
+          <h1 className="text-3xl font-bold">{post.title}</h1>
           <div className="max-w-none">
             {renderPostContent(post.content)}
           </div>

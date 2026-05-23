@@ -18,6 +18,14 @@ export function HomePage() {
           )}
           {posts?.items?.map((post) => (
             <article key={post.id} className="space-y-1 border-b pb-4">
+              <time className="text-xs text-muted-foreground">
+                {new Date(post.created_at).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </time>
               <h3 className="font-medium">
                 <Link
                   to={`/posts/${post.slug}`}
@@ -26,15 +34,8 @@ export function HomePage() {
                   {post.title}
                 </Link>
               </h3>
-              <time className="text-xs text-muted-foreground">
-                {new Date(post.created_at).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </time>
               <p className="text-sm text-muted-foreground">{post.excerpt}</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <span
                     key={tag}
