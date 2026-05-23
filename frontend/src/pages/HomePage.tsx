@@ -34,6 +34,16 @@ export function HomePage() {
                 })}
               </time>
               <p className="text-sm text-muted-foreground">{post.excerpt}</p>
+              <div className="flex flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded bg-secondary px-2 py-1 text-xs"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </article>
           ))}
         </div>
@@ -68,7 +78,7 @@ export function HomePage() {
               ].map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full bg-secondary px-2 py-1 text-xs"
+                  className="rounded bg-secondary px-2 py-1 text-xs"
                 >
                   {tag}
                 </span>
