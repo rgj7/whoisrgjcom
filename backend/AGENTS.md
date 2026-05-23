@@ -40,11 +40,16 @@ src/
 │   ├── exceptions.py    # InvalidCredentials, Unauthorized, Forbidden
 │   └── router.py        # GET /auth/me, POST /auth/login
 ├── posts/               # Blog posts domain
-│   ├── models.py        # Post ORM model
-│   ├── schemas.py       # PostBase, PostCreate, PostUpdate, PostResponse, PaginatedPosts
+│   ├── models.py        # Post ORM model (includes `tags` relationship)
+│   ├── schemas.py       # PostBase, PostCreate, PostUpdate (tags: list[str] | None), PostResponse (tags: list[str]), PaginatedPosts
 │   ├── router.py        # Public: GET /posts/ (paginated, published), GET /posts/slug/{slug}, GET /posts/{post_id}
 │   ├── admin_router.py  # Admin: CRUD on /admin/posts/ (list, get, create, update, delete)
 │   └── exceptions.py    # PostNotFound, PostSlugConflict
+├── tags/                # Tag system (many-to-many with posts)
+│   ├── models.py        # Tag ORM model + post_tags join table
+│   ├── schemas.py       # TagResponse (id, name)
+│   ├── router.py        # GET /admin/tags/?search= (prefix match, case-insensitive)
+│   └── service.py       # resolve_tags() (create-or-lookup), set_post_tags() (replace associations)
 └── scripts/             # Utility scripts
     └── create_admin.py  # CLI to create the admin user
 
@@ -72,14 +77,21 @@ tests/
 | GET    | `/`                         | Public   | Health check                             |
 | GET    | `/auth/me`                  | Required | Get current user info                    |
 | POST   | `/auth/login`               | Public   | Get JWT token                            |
-| GET    | `/posts/`                   | Public   | List published posts (paginated)         |
-| GET    | `/posts/slug/{slug}`        | Public   | Get published post by slug               |
-| GET    | `/posts/{post_id}`          | Public   | Get published post by UUID               |
+| GET    | `/posts/`                   | Public   | List published posts (paginated, includes tags) |
+| GET    | `/posts/slug/{slug}`        | Public   | Get published post by slug (includes tags) |
+| GET    | `/posts/{post_id}`          | Public   | Get published post by UUID (includes tags) |
 | GET    | `/admin/posts/`             | Required | List all posts (paginated, incl. drafts) |
 | GET    | `/admin/posts/{post_id}`    | Required | Get post by UUID (any status)            |
-| POST   | `/admin/posts/`             | Required | Create post                              |
-| PUT    | `/admin/posts/{post_id}`    | Required | Update post (partial)                    |
+| POST   | `/admin/posts/`             | Required | Create post (accepts `tags: string[]`)   |
+| PUT    | `/admin/posts/{post_id}`    | Required | Update post (partial, optional `tags`)   |
 | DELETE | `/admin/posts/{post_id}`    | Required | Delete post                              |
+| GET    | `/admin/tags/?search=`      | Required | Search tags (prefix match, case-insensitive) |
+
+> All `/admin/posts/` endpoints require auth but do **not** check ownership — any authenticated user can create, update, or delete any post. (TODO: add ownership guard if needed.)
+>
+> Public `/posts/` endpoints only return posts where `published=True`.
+>
+> Tag names are normalized: lowercased, trimmed, deduplicated. Responses return sorted `tags: list[str]`.
 
 > All `/admin/posts/` endpoints require auth but do **not** check ownership — any authenticated user can create, update, or delete any post. (TODO: add ownership guard if needed.)
 >

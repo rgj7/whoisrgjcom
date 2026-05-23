@@ -72,9 +72,11 @@ Admin routes are protected: `AdminLayout` checks for a `token` in localStorage a
 - `updateAdminPost(token, id, data)`
 
 **Key types:**
-- `Post` — `{ id, title, slug, content: JSONContent, excerpt, published, created_at, updated_at }`
+- `Post` — `{ id, title, slug, content: JSONContent, excerpt, published, tags: string[], created_at, updated_at }`
 - `PaginatedPosts` — `{ items, total, page, limit, pages }`
+- `Tag` — `{ id: string, name: string }`
 - `CurrentUser` — `{ id, username, email, is_superuser, created_at }`
+- `PostFormData` — extends PostCreate with `tags: string[]`
 
 ### Tiptap setup
 
@@ -91,6 +93,9 @@ Post content is stored as Tiptap JSON (`JSONContent`), not HTML.
 | Directory | Purpose |
 |-----------|---------|
 | `src/components/ui/` | shadcn/ui primitives (button, card, input, sidebar, etc.) |
+| `src/components/ui/command.tsx` | cmdk wrapper components (Combobox primitives) |
+| `src/components/ui/popover.tsx` | Radix Popover primitives |
+| `src/components/ui/combobox.tsx` | `Combobox` + `MultiCombobox` (search-as-you-type, debounced, badges) |
 | `src/components/tiptap-ui*/` | Tiptap editor UI buttons and primitives |
 | `src/components/tiptap-icons/` | Icon components for Tiptap toolbar |
 | `src/components/tiptap-node/` | Custom Tiptap nodes (blockquote, code-block, heading, horizontal-rule, image, image-upload, list, paragraph) |
@@ -99,7 +104,7 @@ Post content is stored as Tiptap JSON (`JSONContent`), not HTML.
 | `src/hooks/` | Custom React hooks (10 hooks) |
 | `src/layouts/` | Layout wrappers (AdminLayout, DefaultLayout, LoginLayout) |
 | `src/pages/` | Route components |
-| `src/pages/admin/` | Admin-only pages |
+| `src/pages/admin/` | Admin-only pages (PostForm has tag input with searchable Combobox) |
 | `src/lib/` | Utilities, API layer, Tiptap renderer |
 
 ### Path aliases
@@ -150,6 +155,7 @@ bun format           # Run Biome format --write
 | motion | ^12.38.0 | Animations |
 | lowlight | ^3.3.0 | Syntax highlighting |
 | highlight.js | (via lowlight) | Code block highlighting |
+| cmdk | ^1.1.1 | Command menu primitives (MultiCombobox) |
 
 ## Backend Integration
 
@@ -172,3 +178,12 @@ API runs on port 8000. Frontend connects via relative host (`window.location.hos
 - The `bun-plugin-tailwind` is used in both `build.ts` and `bunfig.toml` static config
 - SWR hooks have `dedupingInterval: 0` — data is never cached between requests
 - The `frontend.tsx` uses `import.meta.hot.data.root` for HMR root reuse (Bun-specific pattern)
+
+### Tag Input (MultiCombobox)
+
+- `src/components/ui/combobox.tsx` — `MultiCombobox` component: search-as-you-type with 300ms debounce, badge display with × remove, auto-hide duplicates
+- `src/pages/admin/PostForm.tsx` — uses `MultiCombobox` for tag input; maps tag names ↔ UUIDs
+- `src/pages/admin/CreatePostPage.tsx` / `EditPostPage.tsx` — fetch existing tags on mount, use `tagsLoaded` guard before rendering
+- Tag names are trimmed on Enter; backend normalizes (lowercase, dedup)
+- Styling: `.command-dialog` uses `@layer components` in `globals.css` (avoids `bun-plugin-tailwind` nested selector bug)
+- API: `GET /admin/tags?search=` returns existing tags; send `tags: string[]` in create/update payloads
