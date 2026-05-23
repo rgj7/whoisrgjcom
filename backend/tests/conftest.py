@@ -31,6 +31,7 @@ from src.auth.models import User  # noqa: F401
 from src.main import app
 from src.models import Base
 from src.posts.models import Post  # noqa: F401
+from src.tags.models import Tag  # noqa: F401
 
 
 @pytest_asyncio.fixture
@@ -77,5 +78,7 @@ async def setup_db(test_engine):
 async def clean_db(test_engine):
     """Delete all data before each test."""
     async with test_engine.begin() as conn:
+        await conn.execute(text("DELETE FROM post_tags"))
+        await conn.execute(text("DELETE FROM tag"))
         await conn.execute(text("DELETE FROM post"))
         await conn.execute(text('DELETE FROM "user"'))
