@@ -513,3 +513,73 @@ async def test_public_post_by_slug_includes_tags(client: httpx.AsyncClient) -> N
     assert resp.status_code == 200
     data = resp.json()
     assert set(data["tags"]) == {"slugtest"}
+
+
+@pytest.mark.asyncio
+async def test_orphan_tag_cleanup_on_update(client: httpx.AsyncClient) -> None:
+    """Removing the last tag from a post deletes the tag from the database."""
+    headers = await get_auth_header(client)
+    create_resp = await client.post(
+        "/admin/posts/",
+        json=make_post_data(slug="orphan-post", tags=["OrphanTag"]),
+        headers=headers,
+    )
+    post_id = create_resp.json()["id"]
+
+    # Verify tag exists in DB
+    async with create_async_engine(url=settings.test_database_url, pool_pre_ping=True).connect() as conn:
+        result = await conn.execute(text("SELECT COUNT(*) FROM tag WHERE name = 'orphantag'"))
+        assert result.scalar() == 1
+
+    # Remove the tag
+    await client.put(
+        f"/admin/posts/{post_id}",
+        json={"tags": []},
+        headers=headers,
+    )
+
+    # Verify tag is deleted from DB
+    async with create_async_engine(url=settings.test_database_url, pool_pre_ping=True).connect() as conn:
+        result = await conn.execute(text("SELECT COUNT(*) FROM tag WHERE name = 'orphantag'"))
+        assert result.scalar() == 0
+
+
+@pytest.mark.asyncio
+async def test_shared_tag_not_deleted_on_cleanup(client: httpx.AsyncClient) -> None:
+    """Tags still referenced by other posts are NOT deleted."""
+    headers = await get_auth_header(client)
+    # Two posts sharing "shared"
+    await client.post(
+        "/admin/posts/",
+        json=make_post_data(slug="post-a", tags=["Shared", "OnlyA"]),
+        headers=headers,
+    )
+    await client.post(
+        "/admin/posts/",
+        json=make_post_data(slug="post-b", tags=["Shared", "OnlyB"]),
+        headers=headers,
+    )
+
+    # Remove "Shared" from post-a — it should survive because post-b still uses it
+    create_resp = await client.get("/admin/posts/")
+    post_a_id = next(p["id"] for p in create_resp.json()["items"] if p["slug"] == "post-a")
+    await client.put(
+        f"/admin/posts/{post_a_id}",
+        json={"tags": ["OnlyA"]},
+        headers=headers,
+    )
+
+    # Verify "shared" still exists
+    async with create_async_engine(url=settings.test_database_url, pool_pre_ping=True).connect() as conn:
+        result = await conn.execute(text("SELECT COUNT(*) FROM tag WHERE name = 'shared'"))
+        assert result.scalar() == 1
+
+    # Verify "onlya" still exists (still on post-a)
+    async with create_async_engine(url=settings.test_database_url, pool_pre_ping=True).connect() as conn:
+        result = await conn.execute(text("SELECT COUNT(*) FROM tag WHERE name = 'onlya'"))
+        assert result.scalar() == 1
+
+    # Verify "onlyb" still exists (still on post-b)
+    async with create_async_engine(url=settings.test_database_url, pool_pre_ping=True).connect() as conn:
+        result = await conn.execute(text("SELECT COUNT(*) FROM tag WHERE name = 'onlyb'"))
+        assert result.scalar() == 1
