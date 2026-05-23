@@ -18,14 +18,16 @@ DbSession = Annotated[AsyncSession, Depends(get_db)]
     "/",
     response_model=list[TagResponse],
     summary="Search existing tags",
-    description="Returns tags whose names start with the given prefix (case-insensitive).",
+    description="Returns tags whose names start with the given prefix (case-insensitive). "
+    "Returns all tags when no search query is provided.",
 )
 async def search_tags(
     search: str = Query(default="", min_length=0),
     db: DbSession = None,  # type: ignore[assignment]
 ):
     if not search:
-        return []
+        result = await db.execute(select(Tag).order_by(Tag.name))
+        return [TagResponse.model_validate(tag) for tag in result.scalars().all()]
 
     pattern = f"{search.lower()}%"
     result = await db.execute(select(Tag).where(Tag.name.ilike(pattern)).order_by(Tag.name))
