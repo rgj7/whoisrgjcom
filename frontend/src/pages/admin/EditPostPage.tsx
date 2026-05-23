@@ -19,12 +19,16 @@ export function EditPostPage() {
     }
   }, [error, navigate]);
 
-  const handleSubmit = async (data: PostFormData) => {
-    if (!id) return;
+  const savePost = async (data: PostFormData): Promise<{ success: boolean; error?: string }> => {
+    if (!id) {
+      return { success: false, error: "Post ID is missing" };
+    }
 
     setIsSubmitting(true);
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      return { success: false, error: "Not authenticated" };
+    }
 
     try {
       const res = await fetch(`${API_BASE}/admin/posts/${id}`, {
@@ -41,12 +45,20 @@ export function EditPostPage() {
         throw new Error(`Failed to update post: ${res.status} ${body}`);
       }
 
-      toast.success("Post updated successfully");
-      navigate("/dashboard/posts");
+      return { success: true };
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update post");
+      return { success: false, error: err instanceof Error ? err.message : "Failed to update post" };
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (data: PostFormData) => {
+    const result = await savePost(data);
+    if (result.success) {
+      toast.success("Post updated successfully");
+    } else {
+      toast.error(result.error);
     }
   };
 

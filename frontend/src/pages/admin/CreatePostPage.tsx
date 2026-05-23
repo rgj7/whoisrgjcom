@@ -7,11 +7,11 @@ import { type PostFormData, PostForm } from "./PostForm";
 export function CreatePostPage() {
   const navigate = useNavigate();
 
-  const handleSubmit = async (data: PostFormData) => {
+  const createPost = async (data: PostFormData): Promise<{ success: boolean; error?: string }> => {
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
-      return;
+      return { success: false, error: "Not authenticated" };
     }
 
     try {
@@ -29,10 +29,19 @@ export function CreatePostPage() {
         throw new Error(`Failed to create post: ${res.status} ${body}`);
       }
 
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : "Failed to create post" };
+    }
+  };
+
+  const handleSubmit = async (data: PostFormData) => {
+    const result = await createPost(data);
+    if (result.success) {
       toast.success("Post created successfully");
       navigate("/dashboard/posts");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create post");
+    } else {
+      toast.error(result.error);
     }
   };
 

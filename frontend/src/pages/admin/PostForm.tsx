@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { SubmitEvent } from "react";
 import type { JSONContent } from "@tiptap/react";
 
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
@@ -42,7 +43,7 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: 
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     if (!title.trim() || !slug.trim() || content === "" || (typeof content === "string" && !content.trim())) return;
 
@@ -59,12 +60,18 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: 
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{mode === "create" ? "New Post" : "Edit Post"}</h1>
-        <Button variant="outline" onClick={() => window.history.back()}>
-          Back to Posts
+        <Button form="post-form" type="submit" disabled={isSubmitting}>
+          {isSubmitting
+            ? mode === "create"
+              ? "Creating…"
+              : "Saving…"
+            : mode === "create"
+              ? "Create Post"
+              : "Save Changes"}
         </Button>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form id="post-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-6">
             <div className="flex flex-1 flex-col gap-2">
@@ -125,16 +132,6 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: 
             onUpdate={setContent}
           />
         </div>
-
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? mode === "create"
-              ? "Creating…"
-              : "Saving…"
-            : mode === "create"
-              ? "Create Post"
-              : "Save Changes"}
-        </Button>
       </form>
     </div>
   );
