@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, ConfigDict, Field, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
 
 class PostBase(BaseModel):
@@ -13,6 +13,18 @@ class PostBase(BaseModel):
     content: dict = Field(...)
     excerpt: str | None = Field(default=None, max_length=500)
     published: bool = True
+    tags: list[str] = []
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def normalize_tags(cls, value):
+        """Convert Tag ORM objects to tag name strings."""
+        if value is None:
+            return []
+        return [
+            tag.name if hasattr(tag, "name") else tag
+            for tag in value
+        ]
 
 
 class PostCreate(PostBase):
@@ -29,6 +41,7 @@ class PostUpdate(BaseModel):
     content: dict | None = Field(default=None)
     excerpt: str | None = Field(default=None, max_length=500)
     published: bool | None = None
+    tags: list[str] | None = None
 
 
 class PostResponse(PostBase):
@@ -51,6 +64,10 @@ class PostResponse(PostBase):
                 value = value.replace(tzinfo=ZoneInfo("UTC"))
             return value.strftime("%Y-%m-%dT%H:%M:%S%z")
         return value
+
+    @field_serializer("tags")
+    def serialize_tags(self, value: list[str]):
+        return sorted(value)
 
 
 class PaginatedPosts(BaseModel):

@@ -12,6 +12,7 @@ from src.database import get_db
 from src.posts.exceptions import PostNotFound, PostSlugConflict
 from src.posts.models import Post
 from src.posts.schemas import PaginatedPosts, PostCreate, PostResponse, PostUpdate
+from src.tags import service as tag_service
 
 router = APIRouter(prefix="/admin/posts", tags=["admin"])
 
@@ -77,9 +78,16 @@ async def get_post(post_id: uuid.UUID, db: DbSession):
     },
 )
 async def create_post(data: PostCreate, user: CurrentUser, db: DbSession):
-    post = Post(**data.model_dump())
+    post_data = data.model_dump(exclude={"tags"})
+    post = Post(**post_data)
     db.add(post)
     try:
+        await db.flush()
+        tag_names = data.tags
+        if tag_names:
+            tags = await tag_service.resolve_tags(tag_names, db)
+            tag_ids = [tag.id for tag in tags]
+            await tag_service.set_post_tags(db, post.id, tag_ids)
         await db.commit()
     except IntegrityError:
         await db.rollback()
@@ -109,8 +117,19 @@ async def update_post(
         raise PostNotFound(str(post_id))
 
     update_data = data.model_dump(exclude_unset=True)
+    # Extract tags before removing — it's a relationship, not a simple field
+    tag_names = update_data.pop("tags", None)
     for field, value in update_data.items():
         setattr(post, field, value)
+
+    # Resolve and set tags if provided
+    if tag_names is not None:
+        if tag_names:
+            tags = await tag_service.resolve_tags(tag_names, db)
+            tag_ids = [tag.id for tag in tags]
+            await tag_service.set_post_tags(db, post.id, tag_ids)
+        else:
+            await tag_service.set_post_tags(db, post.id, [])
 
     try:
         await db.commit()

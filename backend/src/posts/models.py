@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import Boolean, String, func, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models import Base
 
@@ -21,4 +21,10 @@ class Post(Base):
     updated_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
+    )
+
+    tags: Mapped[list["Tag"]] = relationship(
+        secondary="post_tags",
+        back_populates="posts",
+        lazy="selectin",
     )
