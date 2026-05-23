@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AnimatedNavbar from "./components/AnimatedNavbar";
 import ThemeToggle from "./components/ThemeToggle";
@@ -19,6 +20,7 @@ import "./index.css";
 export function App() {
   return (
     <TooltipProvider>
+      <Toaster />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
