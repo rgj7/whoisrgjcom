@@ -16,7 +16,7 @@ if config.config_file_name is not None:
 from src.config import settings  # noqa: E402
 
 # Populate the sqlalchemy.url that async_engine_from_config reads.
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+config.set_main_option("sqlalchemy.url", settings.database_url)
 
 from src.auth.models import User  # noqa: E402, F401
 from src.models import Base  # noqa: E402
