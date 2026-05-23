@@ -6,6 +6,11 @@ export const API_BASE =
     ? `${window.location.protocol}//${window.location.hostname}:8000`
     : "http://localhost:8000";
 
+export interface Tag {
+  id: string;
+  name: string;
+}
+
 export interface Post {
   id: string;
   title: string;
@@ -13,6 +18,7 @@ export interface Post {
   content: JSONContent;
   excerpt: string | null;
   published: boolean;
+  tags: string[];
   created_at: string;
   updated_at: string;
 }
@@ -102,6 +108,18 @@ export async function login(username: string, password: string): Promise<LoginRe
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`Login failed: ${res.status} ${body}`);
+  }
+  return res.json();
+}
+
+export async function searchTags(token: string, query: string): Promise<Tag[]> {
+  const res = await fetch(`${API_BASE}/admin/tags/?search=${encodeURIComponent(query)}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to search tags: ${res.status}`);
   }
   return res.json();
 }

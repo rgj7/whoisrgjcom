@@ -120,3 +120,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .command-dialog [cmdk-group-heading] {
+    @apply text-muted-foreground px-2 py-1.5 text-xs font-medium;
+  }
+  .command-dialog [cmdk-group] {
+    @apply px-2;
+  }
+  .command-dialog [cmdk-group] > div {
+    @apply px-2 pb-2 pt-4;
+  }
+  .command-dialog [cmdk-group]:first-child > div {
+    @apply pt-0;
+  }
+  .command-dialog [cmdk-input] {
+    @apply px-3 py-2;
+  }
+  .command-dialog [cmdk-item] {
+    @apply px-3 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground;
+  }
+  .command-dialog [cmdk-item]:not(.disabled) {
+    @apply cursor-pointer;
+  }
+}

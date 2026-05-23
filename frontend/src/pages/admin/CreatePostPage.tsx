@@ -1,11 +1,30 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { API_BASE } from "@/lib/api";
+import { API_BASE, type Tag, searchTags } from "@/lib/api";
 import { type PostFormData, PostForm } from "./PostForm";
 
 export function CreatePostPage() {
   const navigate = useNavigate();
+  const [existingTags, setExistingTags] = useState<Tag[]>([]);
+  const [tagsLoaded, setTagsLoaded] = useState(false);
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    if (!token) return;
+    const loadTags = async () => {
+      try {
+        const tags = await searchTags(token, "");
+        setExistingTags(tags);
+      } catch {
+        // Ignore tag load errors
+      } finally {
+        setTagsLoaded(true);
+      }
+    };
+    loadTags();
+  }, [token]);
 
   const createPost = async (data: PostFormData): Promise<{ success: boolean; error?: string }> => {
     const token = localStorage.getItem("token");
@@ -21,7 +40,7 @@ export function CreatePostPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, tags: data.tags }),
       });
 
       if (!res.ok) {
@@ -45,7 +64,27 @@ export function CreatePostPage() {
     }
   };
 
-  return <PostForm mode="create" onSubmit={handleSubmit} />;
+  if (!tagsLoaded) {
+    return <p className="text-sm text-muted-foreground">Loading…</p>;
+  }
+
+  return (
+    <PostForm
+      mode="create"
+      initialData={{
+        title: "",
+        slug: "",
+        content: "",
+        excerpt: "",
+        published: true,
+        tags: [],
+      }}
+      existingTags={existingTags.map((t) => ({ value: t.name, label: t.name }))}
+      isSubmitting={false}
+      onSubmit={handleSubmit}
+      authToken={token ?? undefined}
+    />
+  );
 }
 
 export default CreatePostPage;

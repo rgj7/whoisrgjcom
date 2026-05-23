@@ -6,7 +6,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models import Base
 
-
 post_tags = Table(
     "post_tags",
     Base.metadata,

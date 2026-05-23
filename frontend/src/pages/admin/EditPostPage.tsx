@@ -2,15 +2,33 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { API_BASE, useAdminPostById } from "@/lib/api";
+import { API_BASE, type Tag, useAdminPostById, searchTags } from "@/lib/api";
 import { type PostFormData, PostForm } from "./PostForm";
 
 export function EditPostPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [existingTags, setExistingTags] = useState<Tag[]>([]);
+  const [tagsLoaded, setTagsLoaded] = useState(false);
+  const token = localStorage.getItem("token");
 
   const { data: post, isLoading, error } = useAdminPostById(id ?? "");
+
+  useEffect(() => {
+    if (!token) return;
+    const loadTags = async () => {
+      try {
+        const tags = await searchTags(token, "");
+        setExistingTags(tags);
+      } catch {
+        // Ignore tag load errors
+      } finally {
+        setTagsLoaded(true);
+      }
+    };
+    loadTags();
+  }, [token]);
 
   useEffect(() => {
     if (error) {
@@ -37,7 +55,7 @@ export function EditPostPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, tags: data.tags }),
       });
 
       if (!res.ok) {
@@ -62,7 +80,7 @@ export function EditPostPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || !tagsLoaded) {
     return <p className="text-sm text-muted-foreground">Loading…</p>;
   }
 
@@ -77,9 +95,12 @@ export function EditPostPage() {
         content: post.content,
         excerpt: post.excerpt ?? "",
         published: post.published,
+        tags: post.tags ?? [],
       }}
+      existingTags={existingTags.map((t) => ({ value: t.name, label: t.name }))}
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
+      authToken={token ?? undefined}
     />
   );
 }

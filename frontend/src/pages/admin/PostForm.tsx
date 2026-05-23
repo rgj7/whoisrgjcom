@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { searchTags } from "@/lib/api";
+import { MultiCombobox, type ComboboxOption } from "@/components/ui/combobox";
 
 
 export interface PostFormData {
@@ -15,6 +17,7 @@ export interface PostFormData {
   content: JSONContent | string;
   excerpt: string | null;
   published: boolean;
+  tags: string[];
 }
 
 export interface PostFormProps {
@@ -22,14 +25,22 @@ export interface PostFormProps {
   initialData?: PostFormData;
   isSubmitting?: boolean;
   onSubmit: (data: PostFormData) => Promise<void> | void;
+  existingTags?: ComboboxOption[];
+  authToken?: string;
 }
 
-export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: PostFormProps) {
+export function PostForm({ mode, initialData, isSubmitting = false, onSubmit, existingTags = [], authToken }: PostFormProps) {
   const [title, setTitle] = useState(initialData?.title ?? "");
   const [slug, setSlug] = useState(initialData?.slug ?? "");
   const [content, setContent] = useState<JSONContent | string>(initialData?.content ?? "");
   const [excerpt, setExcerpt] = useState(initialData?.excerpt ?? "");
   const [published, setPublished] = useState(initialData?.published ?? true);
+  // Normalize initial tag names to UUIDs so all selected values are UUIDs
+  const [tags, setTags] = useState<string[]>(
+    initialData?.tags
+      ?.map((name) => existingTags.find((t) => t.label.toLowerCase() === name.toLowerCase())?.value ?? name)
+      .filter(Boolean) ?? [],
+  );
 
   const generateSlug = () => {
     if (!title.trim()) return;
@@ -53,6 +64,7 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: 
       content,
       excerpt: excerpt.trim() || null,
       published,
+      tags,
     });
   };
 
@@ -122,6 +134,24 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit }: 
             onChange={(e) => setExcerpt(e.target.value)}
             placeholder="Short excerpt"
             maxLength={500}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label>Tags</Label>
+          <MultiCombobox
+            options={existingTags}
+            selected={tags}
+            onSelectedChange={setTags}
+            onCreateNew={(name) => {
+              const trimmed = name.trim();
+              if (trimmed) {
+                setTags((prev) => [...prev, trimmed]);
+              }
+            }}
+            searchTags={authToken ? (q) => searchTags(authToken!, q).then((tags) => tags.map((t) => ({ value: t.id, label: t.name }))) : undefined}
+            placeholder="Add tags…"
+            emptyText="Type to search existing tags…"
           />
         </div>
 
