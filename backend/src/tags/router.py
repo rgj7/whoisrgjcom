@@ -22,8 +22,8 @@ DbSession = Annotated[AsyncSession, Depends(get_db)]
     "Returns all tags when no search query is provided.",
 )
 async def search_tags(
+    db: DbSession,
     search: str = Query(default="", min_length=0),
-    db: DbSession = None,  # type: ignore[assignment]
 ):
     if not search:
         result = await db.execute(select(Tag).order_by(Tag.name))

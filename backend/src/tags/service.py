@@ -1,6 +1,8 @@
 """Tag resolution helpers for post create/update operations."""
 
-from sqlalchemy import select
+import uuid
+
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.tags.models import Tag, post_tags
@@ -19,42 +21,43 @@ async def resolve_tags(tag_names: list[str], db: AsyncSession) -> list[Tag]:
     if not names:
         return []
 
-    # Look up existing tags
     result = await db.execute(select(Tag).where(Tag.name.in_(names)))
     existing = {tag.name: tag for tag in result.scalars().all()}
 
-    # Create new tags
-    new_tags: list[Tag] = []
-    for name in names:
-        if name not in existing:
-            tag = Tag(name=name)
-            new_tags.append(tag)
+    new_tags: list[Tag] = [Tag(name=name) for name in names if name not in existing]
 
     if new_tags:
         db.add_all(new_tags)
         await db.flush()
 
-    # Re-fetch to ensure all tags (including newly created) are loaded
-    all_ids = [tag.id for tag in existing.values()] + [tag.id for tag in new_tags]
-    result = await db.execute(select(Tag).where(Tag.id.in_(all_ids)))
-    return list(result.scalars().all())
+    return list(existing.values()) + new_tags
 
 
-async def set_post_tags(db: AsyncSession, post_id, tag_ids: list):
+async def _delete_orphaned_tags(db: AsyncSession) -> None:
+    """Delete tags that are no longer referenced by any post."""
+    await db.execute(
+        delete(Tag).where(
+            Tag.id.not_in(
+                select(post_tags.c.tag_id)
+            )
+        )
+    )
+    await db.flush()
+
+
+async def set_post_tags(db: AsyncSession, post_id: uuid.UUID, tag_ids: list[uuid.UUID]) -> None:
     """Replace all tag associations for a post.
 
-    Clears existing associations and inserts new ones in a single batch.
+    Clears existing associations, inserts new ones, and deletes any tags
+    that are no longer referenced by any post.
     """
-    if not tag_ids:
-        await db.execute(post_tags.delete().where(post_tags.c.post_id == post_id))
-        return
-
-    # Delete existing associations
     await db.execute(post_tags.delete().where(post_tags.c.post_id == post_id))
 
-    # Insert new associations
-    associations = [
-        {"post_id": post_id, "tag_id": tag_id}
-        for tag_id in tag_ids
-    ]
-    await db.execute(post_tags.insert(), associations)
+    if tag_ids:
+        associations = [
+            {"post_id": post_id, "tag_id": tag_id}
+            for tag_id in tag_ids
+        ]
+        await db.execute(post_tags.insert(), associations)
+
+    await _delete_orphaned_tags(db)
