@@ -7,6 +7,7 @@ import {
   SettingsIcon,
 } from "lucide-react";
 
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Sidebar,
   SidebarContent,
@@ -103,8 +104,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <SidebarRail />
         </Sidebar>
         <SidebarInset className="mx-auto max-w-5xl">
-          <header className="flex h-12 items-center gap-2 border-b px-4">
+          <header className="flex h-12 items-center justify-between border-b px-4">
             <SidebarTrigger />
+            <ThemeToggle />
           </header>
           <div className="flex-1 overflow-auto p-6">
             {children ?? <Outlet />}
