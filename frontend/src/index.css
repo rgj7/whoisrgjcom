@@ -25,9 +25,27 @@ svg.map-zoom:active {
 @layer base {
   :root {
     @apply font-sans;
+
+    --section-travels-bg: #dbeafe;
+    --section-dev-bg: #f3f4f6;
+    --section-gaming-bg: #ede9fe;
   }
 
   body {
     @apply grid min-w-[320px] min-h-screen relative m-0 bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .section-bg-travels {
+    background-color: var(--section-travels-bg);
+  }
+
+  .section-bg-dev {
+    background-color: var(--section-dev-bg);
+  }
+
+  .section-bg-gaming {
+    background-color: var(--section-gaming-bg);
   }
 }
