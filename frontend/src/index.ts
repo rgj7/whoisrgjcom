@@ -3,7 +3,16 @@ import index from "./index.html";
 
 const server = serve({
   routes: {
-    "/*": index,
+    "/images/*": async (req) => {
+      const { pathname } = new URL(req.url);
+      const file = Bun.file(`public${pathname}`);
+
+      if (await file.exists()) {
+        return new Response(file);
+      }
+
+      return new Response("Not Found", { status: 404 });
+    },
 
     "/health": {
       async GET() {
@@ -12,6 +21,8 @@ const server = serve({
         });
       },
     },
+
+    "/*": index,
   },
 
   development: process.env.NODE_ENV !== "production" && {
