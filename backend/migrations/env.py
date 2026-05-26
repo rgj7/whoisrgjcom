@@ -21,6 +21,8 @@ config.set_main_option("sqlalchemy.url", settings.database_url)
 from src.auth.models import User  # noqa: E402, F401
 from src.models import Base  # noqa: E402
 from src.posts.models import Post  # noqa: E402, F401
+from src.tags.models import Tag, post_tags  # noqa: E402, F401
+from src.travels.models import Travel  # noqa: E402, F401
 
 target_metadata = Base.metadata
 

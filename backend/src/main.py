@@ -6,6 +6,8 @@ from src.config import settings
 from src.posts.admin_router import router as admin_posts_router
 from src.posts.router import router as posts_router
 from src.tags.router import router as tags_router
+from src.travels.router import admin_router as admin_travels_router
+from src.travels.router import router as travels_router
 
 SHOW_DOCS_IN = {"dev"}
 app_kwargs: dict = {"title": "whoisrgj.com API"}
@@ -27,6 +29,8 @@ app.include_router(auth_router)
 app.include_router(posts_router)
 app.include_router(admin_posts_router)
 app.include_router(tags_router)
+app.include_router(travels_router)
+app.include_router(admin_travels_router)
 
 
 @app.get("/")
