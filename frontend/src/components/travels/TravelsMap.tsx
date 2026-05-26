@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { geoNaturalEarth1, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import { select } from "d3-selection";
@@ -12,34 +12,51 @@ interface TravelsMapProps {
   bucketlist: string[];
 }
 
-function getCountryFill(isVisited: boolean, isBucketlist: boolean) {
-  if (isVisited) return "var(--color-primary)";
-  if (isBucketlist) return "color-mix(in oklch, var(--color-primary) 35%, transparent)";
+type MapStatus = "visited" | "bucketlist";
+
+function getCountryFill(status?: MapStatus) {
+  if (status === "visited") return "var(--color-map-visited)";
+  if (status === "bucketlist") return "var(--color-map-bucket)";
   return "var(--muted)";
 }
 
 export function TravelsMap({ visited, bucketlist }: TravelsMapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const visitedSet = useMemo(() => new Set(visited), [visited]);
+  const bucketlistSet = useMemo(() => new Set(bucketlist), [bucketlist]);
   const [tooltip, setTooltip] = useState<{
     code: string;
     name: string;
-    status: "visited" | "bucketlist" | null;
+    status: MapStatus | null;
     x: number;
     y: number;
   } | null>(null);
 
-  const handleMouseMove = (e: MouseEvent, code: string) => {
+  const applyStatusesToPaths = (svgEl: SVGSVGElement) => {
+    const paths = svgEl.querySelectorAll<SVGPathElement>("path[data-country]");
+    for (const pathEl of paths) {
+      const code = pathEl.dataset.country;
+      if (!code) continue;
+
+      const status = visitedSet.has(code)
+        ? "visited"
+        : bucketlistSet.has(code)
+          ? "bucketlist"
+          : undefined;
+      pathEl.dataset.status = status ?? "";
+      pathEl.style.fill = getCountryFill(status);
+    }
+  };
+
+  const handleMouseMove = (e: MouseEvent, code: string, status?: MapStatus) => {
     const info = getCountry(code);
     if (!info) return;
-
-    const isVisited = visited.includes(code);
-    const isBucketlist = bucketlist.includes(code);
 
     setTooltip({
       code,
       name: info.name,
-      status: isVisited ? "visited" : isBucketlist ? "bucketlist" : null,
+      status: status ?? null,
       x: e.offsetX,
       y: e.offsetY,
     });
@@ -57,7 +74,6 @@ export function TravelsMap({ visited, bucketlist }: TravelsMapProps) {
         // Use `as any` — world-atlas JSON shape doesn't perfectly match topojson types
         const worldObj = world as any;
         const collection = feature(worldObj, worldObj.objects.countries) as any;
-
 
         const svgEl = svgRef.current;
         const containerEl = containerRef.current;
@@ -99,12 +115,11 @@ export function TravelsMap({ visited, bucketlist }: TravelsMapProps) {
           const alpha2 = m49ToAlpha2(m49Code);
           if (!alpha2) continue;
 
-          const isVisited = visited.includes(alpha2);
-          const isBucketlist = bucketlist.includes(alpha2);
-
           const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
           pathEl.setAttribute("d", d);
-          pathEl.style.fill = getCountryFill(isVisited, isBucketlist);
+          pathEl.dataset.country = alpha2;
+          pathEl.dataset.status = "";
+          pathEl.style.fill = getCountryFill();
           pathEl.style.stroke = "var(--border)";
           pathEl.style.strokeWidth = "0.5";
           pathEl.style.strokeLinejoin = "round";
@@ -113,25 +128,30 @@ export function TravelsMap({ visited, bucketlist }: TravelsMapProps) {
 
           // Hover handlers
           pathEl.addEventListener("mouseenter", () => {
-            pathEl.style.fill = "var(--muted-foreground)";
+            pathEl.style.fill = "var(--color-map-hover)";
           });
           pathEl.addEventListener("mouseleave", () => {
-            pathEl.style.fill = getCountryFill(isVisited, isBucketlist);
+            const status = pathEl.dataset.status as MapStatus | undefined;
+            pathEl.style.fill = getCountryFill(status);
             setTooltip(null);
           });
           pathEl.addEventListener("mousemove", (e) => {
-            handleMouseMove(e, alpha2);
+            const status = pathEl.dataset.status as MapStatus | undefined;
+            handleMouseMove(e, alpha2, status);
           });
 
           g.appendChild(pathEl);
         }
+
+        // Apply current visited/bucketlist state after initial draw
+        applyStatusesToPaths(svgEl)
 
         // Setup zoom behavior
         const zoomBehavior = d3Zoom()
           .scaleExtent([1, 8])
           .on("zoom", (event: any) => {
             g.setAttribute("transform", event.transform.toString());
-          })
+          });
 
         const initialTransform = zoomIdentity
           .translate(-172.50079204922906, 30.079296208018377)
@@ -151,7 +171,14 @@ export function TravelsMap({ visited, bucketlist }: TravelsMapProps) {
     return () => {
       cancelled = true;
     };
-  }, [visited, bucketlist]);
+  }, []);
+
+  useEffect(() => {
+    const svgEl = svgRef.current;
+    if (!svgEl) return;
+
+    applyStatusesToPaths(svgEl);
+  }, [visitedSet, bucketlistSet]);
 
   return (
     <div ref={containerRef} className="relative w-full aspect-video rounded-xl overflow-hidden border">
