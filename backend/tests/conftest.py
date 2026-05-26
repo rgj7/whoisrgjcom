@@ -32,6 +32,7 @@ from src.main import app
 from src.models import Base
 from src.posts.models import Post  # noqa: F401
 from src.tags.models import Tag  # noqa: F401
+from src.travels.models import Travel  # noqa: F401
 
 
 @pytest_asyncio.fixture
@@ -57,7 +58,7 @@ async def test_engine():
 @pytest_asyncio.fixture
 async def client() -> AsyncGenerator[httpx.AsyncClient]:
     transport = ASGITransport(app=app)
-    ac = httpx.AsyncClient(transport=transport, base_url="http://test")
+    ac = httpx.AsyncClient(transport=transport, base_url="http://test", follow_redirects=True)
     try:
         yield ac
     finally:
@@ -75,10 +76,11 @@ async def setup_db(test_engine):
 
 
 @pytest_asyncio.fixture(autouse=True)
-async def clean_db(test_engine):
+async def clean_db(test_engine, setup_db):
     """Delete all data before each test."""
     async with test_engine.begin() as conn:
         await conn.execute(text("DELETE FROM post_tags"))
         await conn.execute(text("DELETE FROM tag"))
         await conn.execute(text("DELETE FROM post"))
         await conn.execute(text('DELETE FROM "user"'))
+        await conn.execute(text("DELETE FROM travel"))
