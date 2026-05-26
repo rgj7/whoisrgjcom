@@ -3,6 +3,7 @@
 
 @import "../styles/globals.css";
 @import "highlight.js/styles/github.css";
+@import "flag-icons/css/flag-icons.min.css";
 
 /* Tiptap editor node CSS for rendered post content */
 @import "./components/tiptap-node/blockquote-node/blockquote-node.css";
@@ -12,6 +13,14 @@
 @import "./components/tiptap-node/image-node/image-node.css";
 @import "./components/tiptap-node/heading-node/heading-node.css";
 @import "./components/tiptap-node/paragraph-node/paragraph-node.css";
+
+/* Map zoom cursor */
+svg.map-zoom {
+  cursor: grab;
+}
+svg.map-zoom:active {
+  cursor: grabbing;
+}
 
 @layer base {
   :root {

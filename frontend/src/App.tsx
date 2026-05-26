@@ -13,6 +13,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/admin/DashboardPage";
 import { PostsPage } from "./pages/admin/PostsPage";
 import { SettingsPage } from "./pages/admin/SettingsPage";
+import { TravelsSettingsPage } from "./pages/admin/TravelsSettingsPage";
 import { CreatePostPage } from "./pages/admin/CreatePostPage";
 import { EditPostPage } from "./pages/admin/EditPostPage";
 import "./index.css";
@@ -32,6 +33,7 @@ export function App() {
           <Route path="posts/new" element={<CreatePostPage />} />
           <Route path="posts/:id/edit" element={<EditPostPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="travels" element={<TravelsSettingsPage />} />
         </Route>
         <Route
           path="/*"

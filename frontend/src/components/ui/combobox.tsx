@@ -58,7 +58,7 @@ export function Combobox({
                     setOpen(false);
                   }}
                 >
-                  {option.label}
+                  <span dangerouslySetInnerHTML={{ __html: option.label }} />
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -91,6 +91,7 @@ export function MultiCombobox({
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
   const [searchOptions, setSearchOptions] = React.useState<ComboboxOption[]>([]);
+  const [activeIndex, setActiveIndex] = React.useState(0);
   const searchTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const inlineInputRef = React.useRef<HTMLInputElement>(null);
   const commandInputRef = React.useRef<HTMLInputElement>(null);
@@ -99,18 +100,34 @@ export function MultiCombobox({
   const displayedOptions = React.useMemo(() => {
     const combined = [...options, ...searchOptions];
     const seen = new Set<string>();
-    return combined.filter((opt) => {
+
+    const unique = combined.filter((opt) => {
       if (selected.includes(opt.value)) return false;
       if (seen.has(opt.value)) return false;
       seen.add(opt.value);
       return true;
     });
+
+    const plainText = (label: string) =>
+      label.replace(/<[^>]*>/g, "").trim().toLowerCase();
+
+    return unique.sort((a, b) => plainText(a.label).localeCompare(plainText(b.label)));
   }, [options, searchOptions, selected]);
 
   const filteredOptions = displayedOptions.filter(
     (option) =>
       option.label.toLowerCase().includes(inputValue.toLowerCase()),
   );
+
+  React.useEffect(() => {
+    setActiveIndex(0);
+  }, [inputValue, open]);
+
+  React.useEffect(() => {
+    if (activeIndex > Math.max(filteredOptions.length - 1, 0)) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, filteredOptions.length]);
 
   // Live-search tags when input changes (debounced)
   React.useEffect(() => {
@@ -139,35 +156,87 @@ export function MultiCombobox({
     onSelectedChange(selected.filter((s) => s !== value));
   };
 
+  const selectFromInput = () => {
+    const trimmed = inputValue.trim();
+
+    const activeOption = filteredOptions[activeIndex];
+    if (activeOption && !selected.includes(activeOption.value)) {
+      handleSelect(activeOption.value);
+      return true;
+    }
+
+    if (!trimmed) return false;
+
+    const exactMatch = displayedOptions.find(
+      (o) => o.label.toLowerCase() === trimmed.toLowerCase(),
+    );
+    if (exactMatch && !selected.includes(exactMatch.value)) {
+      handleSelect(exactMatch.value);
+      return true;
+    }
+
+    const firstFiltered = filteredOptions[0];
+    if (firstFiltered && !selected.includes(firstFiltered.value)) {
+      handleSelect(firstFiltered.value);
+      return true;
+    }
+
+    if (onCreateNew) {
+      onCreateNew(trimmed);
+      setInputValue("");
+      return true;
+    }
+
+    return false;
+  };
+
   const handleInputKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && inputValue.trim() && onCreateNew) {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      const trimmed = inputValue.trim();
-      const existing = displayedOptions.find(
-        (o) => o.label.toLowerCase() === trimmed.toLowerCase(),
-      );
-      if (existing && !selected.includes(existing.value)) {
-        handleSelect(existing.value);
-      } else {
-        onCreateNew(trimmed);
-        setInputValue("");
-      }
+      setOpen(true);
+      setActiveIndex((prev) => {
+        if (filteredOptions.length === 0) return 0;
+        return (prev + 1) % filteredOptions.length;
+      });
+      return;
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setOpen(true);
+      setActiveIndex((prev) => {
+        if (filteredOptions.length === 0) return 0;
+        return (prev - 1 + filteredOptions.length) % filteredOptions.length;
+      });
+      return;
+    }
+
+    if (e.key === "Enter" && selectFromInput()) {
+      e.preventDefault();
     }
   };
 
   const handleCommandKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && inputValue.trim() && onCreateNew) {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      const trimmed = inputValue.trim();
-      const existing = displayedOptions.find(
-        (o) => o.label.toLowerCase() === trimmed.toLowerCase(),
-      );
-      if (existing && !selected.includes(existing.value)) {
-        handleSelect(existing.value);
-      } else {
-        onCreateNew(trimmed);
-        setInputValue("");
-      }
+      setActiveIndex((prev) => {
+        if (filteredOptions.length === 0) return 0;
+        return (prev + 1) % filteredOptions.length;
+      });
+      return;
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((prev) => {
+        if (filteredOptions.length === 0) return 0;
+        return (prev - 1 + filteredOptions.length) % filteredOptions.length;
+      });
+      return;
+    }
+
+    if (e.key === "Enter" && selectFromInput()) {
+      e.preventDefault();
     }
   };
 
@@ -189,7 +258,7 @@ export function MultiCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-start min-h-9"
+          className="w-full !h-auto min-h-9 justify-start whitespace-normal py-1"
         >
           <div className="flex flex-wrap gap-1">
             {selected.map((s) => {
@@ -204,7 +273,7 @@ export function MultiCombobox({
                     handleRemove(s);
                   }}
                 >
-                  {option?.label ?? s}
+                  <span dangerouslySetInnerHTML={{ __html: option?.label ?? s }} />
                   <span className="ml-1 opacity-60 hover:opacity-100">×</span>
                 </Badge>
               );
@@ -215,6 +284,8 @@ export function MultiCombobox({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleInputKeyDown}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               onFocus={() => setOpen(true)}
               placeholder={selected.length === 0 ? placeholder : undefined}
               className="flex-1 bg-transparent outline-hidden min-w-[80px] px-1"
@@ -223,11 +294,7 @@ export function MultiCombobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-        <Command filter={(value, search) => {
-          const option = displayedOptions.find(o => o.value === value);
-          if (!option) return 0;
-          return option.label.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
-        }}>
+        <Command shouldFilter={false}>
           <CommandInput
             ref={commandInputRef}
             value={inputValue}
@@ -238,16 +305,18 @@ export function MultiCombobox({
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
             <CommandGroup>
-              {filteredOptions.map((option) => (
+              {filteredOptions.map((option, index) => (
                 <CommandItem
                   key={option.value}
                   value={option.value}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  className={index === activeIndex ? "bg-accent text-accent-foreground" : undefined}
                   onSelect={() => {
                     handleSelect(option.value);
                     setOpen(false);
                   }}
                 >
-                  {option.label}
+                  <span dangerouslySetInnerHTML={{ __html: option.label }} />
                 </CommandItem>
               ))}
               {onCreateNew && inputValue.trim() && !displayedOptions.find(o => o.label.toLowerCase() === inputValue.trim().toLowerCase()) && (

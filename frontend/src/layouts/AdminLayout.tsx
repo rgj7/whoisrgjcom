@@ -4,6 +4,7 @@ import {
   FileTextIcon,
   LayoutDashboardIcon,
   LogOutIcon,
+  LuggageIcon,
   SettingsIcon,
 } from "lucide-react";
 
@@ -32,6 +33,7 @@ interface AdminLayoutProps {
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboardIcon },
   { title: "Posts", url: "/dashboard/posts", icon: FileTextIcon },
+  { title: "Travels", url: "/dashboard/travels", icon: LuggageIcon },
   { title: "Settings", url: "/dashboard/settings", icon: SettingsIcon },
 ];
 

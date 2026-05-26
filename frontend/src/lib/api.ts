@@ -161,3 +161,45 @@ export async function updateAdminPost(
   }
   return res.json();
 }
+
+// ─── Travels ──────────────────────────────────────────────────────────
+
+export interface TravelsResponse {
+  visited: string[];
+  bucketlist: string[];
+}
+
+export function useTravels() {
+  return useSWR<TravelsResponse>(`${API_BASE}/travels`, fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 0,
+  });
+}
+
+export async function saveTravels(token: string, data: {
+  visited: string[];
+  bucketlist: string[];
+}): Promise<void> {
+  const res = await fetch(`${API_BASE}/admin/travels`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Failed to save travels: ${res.status} ${body}`);
+  }
+}
+
+export async function deleteTravel(token: string, code: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/admin/travels/${code}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to delete travel: ${res.status}`);
+  }
+}
