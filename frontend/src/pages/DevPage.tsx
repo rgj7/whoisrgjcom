@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,38 @@ import MailFilledIcon from "@/components/ui/icons/mail-filled-icon";
 import type { AnimatedIconHandle } from "@/components/ui/types";
 import { devProfile } from "@/lib/dev-profile";
 import { DefaultLayout } from "@/layouts/DefaultLayout";
+
+function getCompanyAcronym(companyName: string) {
+  return companyName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? "")
+    .join("") || "--";
+}
+
+function ExperienceLogo({ companyName, logoSrc }: { companyName: string; logoSrc: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <div
+      className="mx-auto flex size-20 shrink-0 items-center justify-center rounded-sm border border-border/70 bg-zinc-50 dark:bg-zinc-100"
+      aria-hidden="true"
+    >
+      {hasError ? (
+        <span className="text-sm font-semibold text-muted-foreground">{getCompanyAcronym(companyName)}</span>
+      ) : (
+        <img
+          src={logoSrc}
+          alt=""
+          aria-hidden="true"
+          className="size-14 object-contain"
+          onError={() => setHasError(true)}
+        />
+      )}
+    </div>
+  );
+}
 
 export function DevPage() {
   const mailIconRef = useRef<AnimatedIconHandle>(null);
@@ -99,27 +131,25 @@ export function DevPage() {
       <h2 className="text-2xl font-semibold">My Journey Thus Far...</h2>
       <div className="relative space-y-3 md:space-y-4">
         <div
-          className="pointer-events-none absolute top-2.5 bottom-0 left-3 hidden w-px border-l border-dashed border-muted-foreground/40 md:block"
+          className="pointer-events-none absolute top-0 bottom-0 left-3 hidden w-px border-l border-dashed border-muted-foreground/40 md:block"
           aria-hidden="true"
         />
 
-        {devProfile.experience.map((item, index) => (
-          <div key={`${item.company}-${item.position}`} className="relative md:pl-10">
+        {devProfile.experience.map((item) => (
+          <div key={`${item.companyName}-${item.position}`} className="relative md:pl-10">
             <span
-              className="absolute top-2.5 left-[7px] hidden size-3 rounded-full border border-muted-foreground/50 bg-background md:block"
+              className="absolute top-1/2 left-[7px] hidden size-3 -translate-y-1/2 rounded-full border border-muted-foreground/50 bg-background md:block"
               aria-hidden="true"
             />
-            <div className="grid gap-1 rounded-lg border border-transparent p-1 sm:grid-cols-[7rem_1fr] sm:gap-3">
-              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                {index === 0 ? "Most Recent" : "Earlier"}
-              </p>
+            <div className="grid gap-1 rounded-lg border border-transparent p-1 sm:grid-cols-[7rem_1fr] sm:items-center sm:gap-3">
+              <ExperienceLogo companyName={item.companyName} logoSrc={item.companyLogoSrc} />
               <div>
                 <p className="font-semibold leading-tight">{item.position}</p>
-                <p className="text-sm text-muted-foreground">{item.company}</p>
+                <p className="text-sm text-muted-foreground">{item.companyName} / {item.companyLocation}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{item.impact}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {item.skills.map((skill) => (
-                    <Badge key={`${item.company}-${item.position}-${skill}`} variant="secondary">
+                    <Badge key={`${item.companyName}-${item.position}-${skill}`} variant="secondary">
                       {skill}
                     </Badge>
                   ))}

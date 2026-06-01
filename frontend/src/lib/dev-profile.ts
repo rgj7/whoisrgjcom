@@ -4,7 +4,9 @@ export interface SkillGroup {
 }
 
 export interface ExperienceEntry {
-  company: string;
+  companyName: string;
+  companyLocation: string;
+  companyLogoSrc: string;
   position: string;
   impact: string;
   skills: string[];
@@ -50,12 +52,12 @@ export const devProfile: DevProfile = {
   imageAlt: "Portrait photo",
   skills: [
     {
-      title: "Frontend",
-      items: ["React", "JavaScript", "TypeScript", "Tailwind CSS", "shadcn/ui"],
+      title: "Core",
+      items: ["Python", "Flask", "FastAPI", "React", "TypeScript"],
     },
     {
-      title: "Backend",
-      items: ["Python", "FastAPI", "Flask", "SQLAlchemy", "PostgreSQL"],
+      title: "Architecture",
+      items: ["Design Systems", "Testing"],
     },
     {
       title: "Tooling",
@@ -64,34 +66,44 @@ export const devProfile: DevProfile = {
   ],
   experience: [
     {
-      company: "Apple / Austin, TX",
-      position: "Automation Engineer / Growth Marketing",
+      companyName: "Apple",
+      companyLocation: "Austin, TX",
+      companyLogoSrc: "/images/company-logos/apple.svg",
+      position: "Automation Engineer / AMP Growth Marketing",
       impact: "Engineered a full-stack application to automate end-to-end validation workflows for in-app campaign ads across all Apple Media Products (i.e. Music, TV+).",
-      skills: ["Python", "FastAPI", "React", "TypeScript", "PostgreSQL"],
+      skills: ["Workflow Automation", "Python", "Flask", "React", "PostgreSQL", "SQLAlchemy", "Swift", "XCUITest", "iOS Devices", "Ant Design", "Kubernetes", "Docker", "AWS (S3)"],
     },
     {
-      company: "Amazon / Austin, TX",
+      companyName: "Amazon",
+      companyLocation: "Austin, TX",
+      companyLogoSrc: "/images/company-logos/amazon.svg",
       position: "Software Development Engineer in Test / Amazon Glow",
       impact: "Built CI dashboards and enhanced test frameworks for firmware of Amazon Glow devices.",
-      skills: ["Python", "CI/CD", "Test Automation", "Firmware", "Dashboards"],
+      skills: ["Test Automation", "Python", "React", "PostgreSQL", "Firmware Testing", "PyTest", "Java", "Appium", "ADB"],
     },
     {
-      company: "Hulu / Santa Monica, CA",
+      companyName: "Hulu",
+      companyLocation: "Santa Monica, CA",
+      companyLogoSrc: "/images/company-logos/hulu.svg",
       position: "Software Developer in Test / Video QE",
       impact: "Embedded with Live Pipeline team to develop integration tests for an end-to-end test framework (Hulu-in-a-Box), part of a cross-functional Video QE team inititive.",
-      skills: ["Python", "Integration Testing", "Video Streaming", "Automation"],
+      skills: ["Test Automation", "Python", "PyTest", "Redis", "Docker", "Integration Testing", "Video Streaming", "AWS (S3)"],
     },
     {
-      company: "Rackspace / San Antonio, TX",
+      companyName: "Rackspace",
+      companyLocation: "San Antonio, TX",
+      companyLogoSrc: "/images/company-logos/rackspace.svg",
       position: "Software Developer",
-      impact: "Developed and maintained features for a business-critial monolithic Python backend; performed ETL processes to consolidate client contacts from various datasources.",
-      skills: ["Python", "ETL", "SQL", "Monolith"],
+      impact: "Developed and maintained features for a business-critial monolithic web application; performed ETL processes to consolidate client contacts from various datasources.",
+      skills: ["Backend", "Python", "JavaScript", "Query Language", "PostgreSQL", "ETL", "Flask"],
     },
     {
-      company: "Rackspace / San Antonio, TX",
+      companyName: "Rackspace",
+      companyLocation: "San Antonio, TX",
+      companyLogoSrc: "/images/company-logos/rackspace.svg",
       position: "Software Developer in Test",
       impact: "Created automated tests for various billing components.",
-      skills: ["Test Automation", "Python", "Billing Systems"],
+      skills: ["Test Automation", "Python", "Custom Test Frameworks", "Integration Testing", "Billing Systems"],
     },
   ],
   education: [
