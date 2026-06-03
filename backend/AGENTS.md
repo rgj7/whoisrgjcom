@@ -26,7 +26,7 @@ Machine-readable project context for AI coding agents.
 ```
 src/
 ├── main.py              # FastAPI app factory, router mounts
-├── config.py            # Global BaseSettings (DATABASE_BASE_URL, DATABASE_NAME, ENVIRONMENT, SITE_DOMAIN, CORS_ORIGINS)
+├── config.py            # Global BaseSettings (DATABASE_URL, ENVIRONMENT, SITE_DOMAIN, CORS_ORIGINS)
 ├── constants.py         # Shared enums (Environment: prod | dev)
 ├── models.py            # SQLAlchemy DeclarativeBase + naming convention
 ├── database.py          # Async engine, session factory, get_db dependency
@@ -129,10 +129,7 @@ tests/
 
 | Variable            | Source          | Required | Default       | Description                    |
 |---------------------|-----------------|----------|---------------|--------------------------------|
-| `DATABASE_BASE_URL` | `src.config`    | Yes      | —             | Base connection string (no DB name) |
-| `DATABASE_NAME`     | `src.config`    | No       | Derived from ENVIRONMENT | App DB name override |
-| `database_url`      | `src.config`    | Computed | —             | Full app URL (`base_url` + DB name)  |
-| `test_database_url` | `src.config`    | Computed | —             | Full test URL (`base_url` + `test_whoisrgj`) |
+| `DATABASE_URL`      | `src.config`    | Yes      | —             | Full async SQLAlchemy database URL |
 | `ENVIRONMENT`       | `src.config`    | No       | `prod`        | `dev` or `prod`                |
 | `SITE_DOMAIN`       | `src.config`    | No       | `whoisrgj.com`| Site domain                    |
 | `AUTH_JWT_SECRET`   | `auth.config`   | Yes      | —             | JWT signing secret             |
@@ -140,7 +137,6 @@ tests/
 | `AUTH_JWT_EXP_MINUTES` | `auth.config`| No       | `60`          | Token lifetime in minutes      |
 | `CORS_ORIGINS`        | `src.config`  | No       | `["http://localhost:3000", "https://blog.whoisrgj.com"]` | Allowed CORS origins |
 
-> `database_url` and `test_database_url` are computed properties on the config class — not env vars. They derive from `DATABASE_BASE_URL` + the appropriate database name (`whoisrgj_dev` / `whoisrgj_prod` / `test_whoisrgj`).
 
 ## TODO / open questions
 
