@@ -1,0 +1,3 @@
+blog.whoisrgj.com {
+    reverse_proxy frontend:3000
+}
