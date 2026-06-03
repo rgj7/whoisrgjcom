@@ -6,8 +6,11 @@ so that pydantic-settings can initialise without a real .env file.
 
 import os
 
-# Force test DB name so settings.DATABASE_URL derives to the test database.
-os.environ["DATABASE_NAME"] = "test_whoisrgj"
+# Use the test database unless DATABASE_URL is provided by the environment.
+os.environ.setdefault(
+    "DATABASE_URL",
+    "postgresql+asyncpg://whoisrgj:whoisrgj_dev_password@localhost:5432/test_whoisrgj",
+)
 
 # Auth settings (test-safe values)
 os.environ.setdefault("AUTH_JWT_SECRET", "test-secret-do-not-use-in-production")
@@ -40,7 +43,7 @@ async def test_engine():
     """Per-test async engine for all test DB operations."""
     from src.config import settings
 
-    db_url = settings.test_database_url
+    db_url = settings.DATABASE_URL
     engine = create_async_engine(
         db_url,
         pool_pre_ping=True,

@@ -49,7 +49,7 @@ async def _create_test_user(db_url: str, user_id: str, username: str, email: str
 async def get_auth_header(client: httpx.AsyncClient) -> dict[str, str]:
     """Create a user via DB and log in to get the Authorization header."""
     await _create_test_user(
-        settings.test_database_url,
+        settings.DATABASE_URL,
         "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
         TEST_USER["username"],
         TEST_USER["email"],

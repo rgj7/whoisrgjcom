@@ -47,7 +47,7 @@ async def _create_test_user(db_url: str, user_id: str, username: str, email: str
 async def get_auth_header(client: httpx.AsyncClient) -> dict[str, str]:
     """Create a user via DB and log in to get the Authorization header."""
     await _create_test_user(
-        settings.test_database_url,
+        settings.DATABASE_URL,
         "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
         TEST_USER["username"],
         TEST_USER["email"],
@@ -527,7 +527,7 @@ async def test_orphan_tag_cleanup_on_update(client: httpx.AsyncClient) -> None:
     post_id = create_resp.json()["id"]
 
     # Verify tag exists in DB
-    async with create_async_engine(url=settings.test_database_url, pool_pre_ping=True).connect() as conn:
+    async with create_async_engine(url=settings.DATABASE_URL, pool_pre_ping=True).connect() as conn:
         result = await conn.execute(text("SELECT COUNT(*) FROM tag WHERE name = 'orphantag'"))
         assert result.scalar() == 1
 
@@ -539,7 +539,7 @@ async def test_orphan_tag_cleanup_on_update(client: httpx.AsyncClient) -> None:
     )
 
     # Verify tag is deleted from DB
-    async with create_async_engine(url=settings.test_database_url, pool_pre_ping=True).connect() as conn:
+    async with create_async_engine(url=settings.DATABASE_URL, pool_pre_ping=True).connect() as conn:
         result = await conn.execute(text("SELECT COUNT(*) FROM tag WHERE name = 'orphantag'"))
         assert result.scalar() == 0
 
@@ -570,16 +570,16 @@ async def test_shared_tag_not_deleted_on_cleanup(client: httpx.AsyncClient) -> N
     )
 
     # Verify "shared" still exists
-    async with create_async_engine(url=settings.test_database_url, pool_pre_ping=True).connect() as conn:
+    async with create_async_engine(url=settings.DATABASE_URL, pool_pre_ping=True).connect() as conn:
         result = await conn.execute(text("SELECT COUNT(*) FROM tag WHERE name = 'shared'"))
         assert result.scalar() == 1
 
     # Verify "onlya" still exists (still on post-a)
-    async with create_async_engine(url=settings.test_database_url, pool_pre_ping=True).connect() as conn:
+    async with create_async_engine(url=settings.DATABASE_URL, pool_pre_ping=True).connect() as conn:
         result = await conn.execute(text("SELECT COUNT(*) FROM tag WHERE name = 'onlya'"))
         assert result.scalar() == 1
 
     # Verify "onlyb" still exists (still on post-b)
-    async with create_async_engine(url=settings.test_database_url, pool_pre_ping=True).connect() as conn:
+    async with create_async_engine(url=settings.DATABASE_URL, pool_pre_ping=True).connect() as conn:
         result = await conn.execute(text("SELECT COUNT(*) FROM tag WHERE name = 'onlyb'"))
         assert result.scalar() == 1
