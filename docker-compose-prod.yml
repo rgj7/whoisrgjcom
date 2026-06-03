@@ -33,9 +33,7 @@ services:
       retries: 5
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ghcr.io/rgj7/whoisrgjcom-backend:latest
     restart: unless-stopped
     depends_on:
       postgres:
@@ -51,9 +49,7 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/rgj7/whoisrgjcom-frontend:latest
     restart: unless-stopped
     depends_on:
       backend:
