@@ -3,15 +3,19 @@ FROM python:3.14-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-WORKDIR /app
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
-RUN pip install --no-cache-dir uv
+WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
-COPY . .
+COPY alembic.ini entrypoint.sh ./
+COPY src/ ./src/
+COPY migrations/ ./migrations/
+
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "uv run alembic upgrade head && uv run uvicorn src.main:app --host 0.0.0.0 --port 8000"]
+ENTRYPOINT ["./entrypoint.sh"]
