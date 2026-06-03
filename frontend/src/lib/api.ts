@@ -31,6 +31,25 @@ export interface PaginatedPosts {
   pages: number;
 }
 
+export interface SocialLink {
+  id: string;
+  platform: string;
+  url: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SocialLinksResponse {
+  links: SocialLink[];
+}
+
+export interface SocialLinkInput {
+  platform: string;
+  url: string;
+  sort_order: number;
+}
+
 const POST_TIMEOUT_MS = 5_000;
 
 async function fetcher<T>(url: string): Promise<T> {
@@ -84,6 +103,29 @@ export function useAdminPostById(id: string) {
     revalidateOnFocus: false,
     dedupingInterval: 0,
   });
+}
+
+export function useSocialLinks() {
+  return useSWR<SocialLinksResponse>(`${API_BASE}/social-links/`, fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 0,
+  });
+}
+
+export async function saveSocialLinks(token: string, links: SocialLinkInput[]): Promise<SocialLinksResponse> {
+  const res = await fetch(`${API_BASE}/admin/social-links/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ links }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Failed to save social links: ${res.status} ${body}`);
+  }
+  return res.json();
 }
 
 export interface LoginResponse {

@@ -1,9 +1,14 @@
 import { Link } from "react-router-dom";
-import { usePosts } from "@/lib/api";
+import { usePosts, useSocialLinks } from "@/lib/api";
 import { DefaultLayout } from "@/layouts/DefaultLayout";
 
 export function HomePage() {
   const { data: posts, isLoading, error } = usePosts();
+  const {
+    data: socialLinks,
+    isLoading: isLoadingSocialLinks,
+    error: socialLinksError,
+  } = useSocialLinks();
 
   return (
     <DefaultLayout>
@@ -62,33 +67,28 @@ export function HomePage() {
             </p>
           </div>
           <div className="rounded-lg border p-4">
-            <h2 className="mb-2 text-sm font-semibold">Categories</h2>
-            <ul className="space-y-1 text-sm text-muted-foreground">
-              <li>Technology</li>
-              <li>Design</li>
-              <li>Travel</li>
-              <li>Gaming</li>
-            </ul>
-          </div>
-          <div className="rounded-lg border p-4">
-            <h2 className="mb-2 text-sm font-semibold">Tags</h2>
-            <div className="flex flex-wrap gap-2">
-              {[
-                "react",
-                "typescript",
-                "css",
-                "blogging",
-                "productivity",
-                "design",
-              ].map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded bg-secondary px-2 py-1 text-xs"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
+            <h2 className="mb-2 text-sm font-semibold">Find Me On</h2>
+            {isLoadingSocialLinks && <p className="text-sm text-muted-foreground">Loading links…</p>}
+            {socialLinksError && <p className="text-sm text-muted-foreground">Social links unavailable.</p>}
+            {!isLoadingSocialLinks && !socialLinksError && !socialLinks?.links.length && (
+              <p className="text-sm text-muted-foreground">No social links yet.</p>
+            )}
+            {!!socialLinks?.links.length && (
+              <ul className="space-y-1 text-sm text-muted-foreground">
+                {socialLinks.links.map((link) => (
+                  <li key={link.id}>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:text-foreground hover:underline"
+                    >
+                      {link.platform}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </aside>
       </div>

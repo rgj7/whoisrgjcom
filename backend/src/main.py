@@ -5,6 +5,8 @@ from src.auth.router import router as auth_router
 from src.config import settings
 from src.posts.admin_router import router as admin_posts_router
 from src.posts.router import router as posts_router
+from src.social_links.router import admin_router as admin_social_links_router
+from src.social_links.router import router as social_links_router
 from src.tags.router import router as tags_router
 from src.travels.router import admin_router as admin_travels_router
 from src.travels.router import router as travels_router
@@ -31,6 +33,8 @@ app.include_router(admin_posts_router)
 app.include_router(tags_router)
 app.include_router(travels_router)
 app.include_router(admin_travels_router)
+app.include_router(social_links_router)
+app.include_router(admin_social_links_router)
 
 
 @app.get("/")
