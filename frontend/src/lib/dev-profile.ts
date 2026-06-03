@@ -117,12 +117,16 @@ export const devProfile: DevProfile = {
   codingProfiles: [
     {
       label: "LeetCode",
-      href: "https://leetcode.com/",
+      href: "https://leetcode.com/u/rgj7/",
     },
     {
-      label: "Codeforces",
-      href: "https://codeforces.com/",
+      label: "CodeAbbey",
+      href: "https://www.codeabbey.com/index/user_profile/whoisrgj",
     },
+    {
+      label: "Project Euler",
+      href: "https://projecteuler.net/",
+    }
   ],
   contact: {
     emailUser: "raul",

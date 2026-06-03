@@ -108,26 +108,6 @@ export function DevPage() {
     </section>
 
     <section className="space-y-4">
-      <h2 className="text-2xl font-semibold">Skills</h2>
-      <div className="grid gap-4 md:grid-cols-3">
-        {devProfile.skills.map((group) => (
-          <Card key={group.title}>
-            <CardHeader>
-              <CardTitle>{group.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              {group.items.map((skill) => (
-                <Badge key={skill} variant="secondary">
-                  {skill}
-                </Badge>
-              ))}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </section>
-
-    <section className="space-y-4">
       <h2 className="text-2xl font-semibold">My Journey Thus Far...</h2>
       <div className="relative space-y-3 md:space-y-4">
         <div
@@ -187,6 +167,11 @@ export function DevPage() {
               </a>
             </Button>
           ))}
+        </div>
+        <div className="flex flex-wrap">
+          <a href="https://www.codeabbey.com/index/user_profile/whoisrgj" target="_blank">
+            <img src="https://www.codeabbey.com/index/user_banner/whoisrgj.png" />
+          </a>
         </div>
       </section>
     </DefaultLayout>

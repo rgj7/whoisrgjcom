@@ -63,7 +63,7 @@ export function HomePage() {
           <div className="rounded-lg border p-4">
             <h2 className="mb-2 text-sm font-semibold">About</h2>
             <p className="text-sm text-muted-foreground">
-              Hey there! My name is Raul. I am a software engineer, formerly Apple, Amazon, Hulu/Disney. I am a chronic puzzle seeker, an aspiring world traveler, and a sports fanatic and an avid gamer.
+              Hey there! My name is Raul. I am currently a <a href="/dev">software engineer</a> living in Texas. I like to describe myself as a chronic puzzle seeker, an aspiring world traveler, and a sports fanatic and an avid gamer.
             </p>
           </div>
           <div className="rounded-lg border p-4">

@@ -31,7 +31,11 @@ export function TravelsPage() {
 
   return (
     <DefaultLayout>
-      <h1 className="text-3xl font-bold">Travels</h1>
+      <h1 className="text-3xl font-bold">/travels</h1>
+
+      <p className="mt-4 text-muted-foreground">
+        <p>One of the best pieces of advice I received early in life was to travel as often as you can. I am extremely thankful to my family for their support, allowing me to discover the joys, memories and personal growth that traveling creates.</p>
+      </p>
 
       <TravelsMap visited={visited} bucketlist={bucketlist} />
 
