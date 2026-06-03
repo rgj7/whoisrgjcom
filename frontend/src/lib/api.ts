@@ -212,7 +212,7 @@ export interface TravelsResponse {
 }
 
 export function useTravels() {
-  return useSWR<TravelsResponse>(`${API_BASE}/travels`, fetcher, {
+  return useSWR<TravelsResponse>(`${API_BASE}/travels/`, fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 0,
   });
@@ -222,7 +222,7 @@ export async function saveTravels(token: string, data: {
   visited: string[];
   bucketlist: string[];
 }): Promise<void> {
-  const res = await fetch(`${API_BASE}/admin/travels`, {
+  const res = await fetch(`${API_BASE}/admin/travels/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
