@@ -26,7 +26,7 @@ Machine-readable project context for AI coding agents.
 ```
 src/
 ├── main.py              # FastAPI app factory, router mounts
-├── config.py            # Global BaseSettings (DATABASE_URL, ENVIRONMENT, SITE_DOMAIN, CORS_ORIGINS)
+├── config.py            # Global BaseSettings (DATABASE_URL, ENVIRONMENT, CORS_ORIGINS)
 ├── constants.py         # Shared enums (Environment: prod | dev)
 ├── models.py            # SQLAlchemy DeclarativeBase + naming convention
 ├── database.py          # Async engine, session factory, get_db dependency
@@ -131,7 +131,6 @@ tests/
 |---------------------|-----------------|----------|---------------|--------------------------------|
 | `DATABASE_URL`      | `src.config`    | Yes      | —             | Full async SQLAlchemy database URL |
 | `ENVIRONMENT`       | `src.config`    | No       | `prod`        | `dev` or `prod`                |
-| `SITE_DOMAIN`       | `src.config`    | No       | `whoisrgj.com`| Site domain                    |
 | `AUTH_JWT_SECRET`   | `auth.config`   | Yes      | —             | JWT signing secret             |
 | `AUTH_JWT_ALG`      | `auth.config`   | No       | `HS256`       | JWT algorithm                  |
 | `AUTH_JWT_EXP_MINUTES` | `auth.config`| No       | `60`          | Token lifetime in minutes      |
