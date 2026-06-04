@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AnimatedNavbar from "./components/AnimatedNavbar";
+import Footer from "./components/Footer";
 import ThemeToggle from "./components/ThemeToggle";
 import { AdminLayout } from "./layouts/AdminLayout";
 import { HomePage } from "./pages/HomePage";
@@ -76,6 +77,7 @@ export function App() {
                   <Route path="/posts/:slug" element={<PostPage />} />
                 </Routes>
               </main>
+              <Footer />
             </div>
           }
         />
