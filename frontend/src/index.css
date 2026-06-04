@@ -26,9 +26,9 @@ svg.map-zoom:active {
   :root {
     @apply font-sans;
 
-    --section-travels-bg: #dbeafe;
+    --section-travels-bg: #9bdfff;
     --section-dev-bg: #e2e8f0;
-    --section-hobbies-bg: #ede9fe;
+    --section-hobbies-bg: #c8c1ff;
   }
 
   body {

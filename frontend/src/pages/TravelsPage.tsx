@@ -9,7 +9,7 @@ export function TravelsPage() {
   if (isLoading) {
     return (
       <DefaultLayout>
-        <h1 className="text-3xl font-bold">Travels</h1>
+        <h1 className="text-3xl font-bold">/travels</h1>
         <div className="mt-8 flex items-center justify-center">
           <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
         </div>
@@ -20,7 +20,7 @@ export function TravelsPage() {
   if (error) {
     return (
       <DefaultLayout>
-        <h1 className="text-3xl font-bold">Travels</h1>
+        <h1 className="text-3xl font-bold">/travels</h1>
         <p className="mt-4 text-destructive">Failed to load travels data.</p>
       </DefaultLayout>
     );
@@ -34,8 +34,32 @@ export function TravelsPage() {
       <h1 className="text-3xl font-bold">/travels</h1>
 
       <p className="mt-4 text-muted-foreground">
-        <p>One of the best pieces of advice I received early in life was to travel as often as you can. I am extremely thankful to my family for their support, allowing me to discover the joys, memories and personal growth that traveling creates.</p>
+        One of the best pieces of advice I received early in life was to travel as often as you can. I am extremely thankful to my family for their support, allowing me to discover the joys, memories and personal growth that traveling creates.
       </p>
+
+      <h2 className="text-xl font-bold">Photos</h2>
+
+      <section
+        aria-label="Travel photo gallery coming soon"
+        className="mt-4 rounded-2xl border border-dashed border-muted-foreground/30 bg-background/40 p-4"
+      >
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-muted-foreground/25 bg-muted/30 text-2xl"
+              aria-hidden="true"
+            >
+              📷
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-sm font-medium text-muted-foreground">
+          Photo gallery coming soon.
+        </p>
+      </section>
+
+      <h2 className="text-xl font-bold">Where I've Been</h2>
 
       <TravelsMap visited={visited} bucketlist={bucketlist} />
 
