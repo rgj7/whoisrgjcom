@@ -94,7 +94,7 @@ export const devProfile: DevProfile = {
       companyLocation: "San Antonio, TX",
       companyLogoSrc: "/images/company-logos/rackspace.svg",
       position: "Software Developer",
-      impact: "Developed and maintained features for a business-critial monolithic web application; performed ETL processes to consolidate client contacts from various datasources.",
+      impact: "Developed and maintained features for a business-critical monolithic web application; performed ETL processes to consolidate client contacts from various datasources.",
       skills: ["Backend", "Python", "JavaScript", "Query Language", "PostgreSQL", "ETL", "Flask"],
     },
     {

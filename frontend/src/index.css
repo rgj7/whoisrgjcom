@@ -26,9 +26,9 @@ svg.map-zoom:active {
   :root {
     @apply font-sans;
 
-    --section-travels-bg: #9bdfff;
-    --section-dev-bg: #e2e8f0;
-    --section-hobbies-bg: #c8c1ff;
+    --section-travels-bg: linear-gradient(to top, #accbee 0%, #e7f0fd 100%);
+    --section-dev-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --section-hobbies-bg: linear-gradient(135deg, #64b3f4 0%, #c2e59c 100%);
   }
 
   body {
@@ -38,15 +38,22 @@ svg.map-zoom:active {
 
 @layer components {
   .section-bg-travels {
-    background-color: var(--section-travels-bg);
+    background: var(--section-travels-bg);
   }
 
   .section-bg-dev {
-    background-color: var(--section-dev-bg);
+    background: var(--section-dev-bg);
   }
 
   .section-bg-hobbies {
-    background-color: var(--section-hobbies-bg);
+    background: var(--section-hobbies-bg);
+  }
+
+  html.dark .section-bg-travels,
+  html.dark .section-bg-dev,
+  html.dark .section-bg-hobbies {
+    background-image: none;
+    @apply bg-background;
   }
 
   [data-slot="button"].btn-linkedin {
