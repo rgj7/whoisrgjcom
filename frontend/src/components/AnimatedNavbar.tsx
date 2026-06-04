@@ -28,8 +28,24 @@ const AnimatedNavbar = ({
   const location = useLocation();
 
   return (
-    <div className={cn("flex w-full justify-center p-4", className)}>
-      <nav className="relative flex w-full items-center justify-center">
+    <div className={cn("relative flex w-full items-center justify-center p-6", className)}>
+      <Link
+        to="/"
+        aria-label="Go to home page"
+        className="absolute left-6 z-20 transition-opacity hover:opacity-80"
+      >
+        <img
+          src="/images/whoisrgj_logo_invert.png"
+          alt=""
+          className="h-8 w-auto dark:hidden sm:h-10"
+        />
+        <img
+          src="/images/whoisrgj_logo.png"
+          alt=""
+          className="hidden h-8 w-auto dark:block sm:h-10"
+        />
+      </Link>
+      <nav className="relative flex items-center justify-center">
         {navItems.map((item) => (
           <NavItem
             key={item.label}
@@ -88,7 +104,7 @@ const NavItem = ({
     <Link
       to={to}
       className={cn(
-        "relative flex flex-1 items-center justify-center px-4 py-3 text-sm font-medium transition-colors sm:flex-none",
+        "relative flex flex-1 items-center justify-center px-3 py-3 text-sm font-medium transition-colors sm:flex-none sm:px-4",
         isActive
           ? "text-white dark:text-white"
           : "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200",
