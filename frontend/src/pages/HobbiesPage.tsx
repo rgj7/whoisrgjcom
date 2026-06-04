@@ -1,14 +1,14 @@
 import { DefaultLayout } from "@/layouts/DefaultLayout";
 
-export function GamingPage() {
+export function HobbiesPage() {
   return (
     <DefaultLayout>
-      <h1 className="text-3xl font-bold">Gaming</h1>
+      <h1 className="text-3xl font-bold">/hobbies</h1>
       <p className="text-muted-foreground">
-        Game reviews, setups, and gaming highlights.
+        Projects, pastimes, and personal interests.
       </p>
     </DefaultLayout>
   );
 }
 
-export default GamingPage;
+export default HobbiesPage;

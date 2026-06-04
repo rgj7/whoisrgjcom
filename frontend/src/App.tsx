@@ -8,7 +8,7 @@ import { AdminLayout } from "./layouts/AdminLayout";
 import { HomePage } from "./pages/HomePage";
 import { TravelsPage } from "./pages/TravelsPage";
 import { DevPage } from "./pages/DevPage";
-import { GamingPage } from "./pages/GamingPage";
+import { HobbiesPage } from "./pages/HobbiesPage";
 import { PostPage } from "./pages/PostPage";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/admin/DashboardPage";
@@ -31,7 +31,7 @@ export function App() {
   const sectionBackgroundByPath: Record<string, string> = {
     "/travels": "section-bg-travels",
     "/dev": "section-bg-dev",
-    "/gaming": "section-bg-gaming",
+    "/hobbies": "section-bg-hobbies",
   };
 
   const sectionBackgroundClass =
@@ -72,7 +72,7 @@ export function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/travels" element={<TravelsPage />} />
                   <Route path="/dev" element={<DevPage />} />
-                  <Route path="/gaming" element={<GamingPage />} />
+                  <Route path="/hobbies" element={<HobbiesPage />} />
                   <Route path="/posts/:slug" element={<PostPage />} />
                 </Routes>
               </main>

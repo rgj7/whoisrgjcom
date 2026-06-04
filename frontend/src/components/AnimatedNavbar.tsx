@@ -13,7 +13,7 @@ const navItems = [
   { icon: HomeIcon, label: "HOME", to: "/" },
   { icon: AirplaneIcon, label: "TRAVELS", to: "/travels" },
   { icon: CodeIcon, label: "DEV", to: "/dev" },
-  { icon: GamepadIcon, label: "GAMING", to: "/gaming" },
+  { icon: GamepadIcon, label: "HOBBIES", to: "/hobbies" },
 ];
 
 interface AnimatedNavbarProps {

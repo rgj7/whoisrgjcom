@@ -28,7 +28,7 @@ svg.map-zoom:active {
 
     --section-travels-bg: #dbeafe;
     --section-dev-bg: #e2e8f0;
-    --section-gaming-bg: #ede9fe;
+    --section-hobbies-bg: #ede9fe;
   }
 
   body {
@@ -45,8 +45,8 @@ svg.map-zoom:active {
     background-color: var(--section-dev-bg);
   }
 
-  .section-bg-gaming {
-    background-color: var(--section-gaming-bg);
+  .section-bg-hobbies {
+    background-color: var(--section-hobbies-bg);
   }
 
   [data-slot="button"].btn-linkedin {
