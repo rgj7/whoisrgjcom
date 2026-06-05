@@ -6,11 +6,20 @@ so that pydantic-settings can initialise without a real .env file.
 
 import os
 
-# Use the test database unless DATABASE_URL is provided by the environment.
-os.environ.setdefault(
-    "DATABASE_URL",
-    "postgresql+asyncpg://whoisrgj:whoisrgj_dev_password@localhost:5432/test_whoisrgj",
+from sqlalchemy.engine import make_url
+
+# Always run tests against the test database, even if DATABASE_URL points at
+# the local dev database. This preserves the connection details while swapping
+# only the database name.
+DEFAULT_DATABASE_URL = (
+    "postgresql+asyncpg://whoisrgj:whoisrgj_dev_password@localhost:5432/whoisrgj"
 )
+os.environ["DATABASE_URL"] = (
+    make_url(os.environ.get("DATABASE_URL", DEFAULT_DATABASE_URL))
+    .set(database="test_whoisrgj")
+    .render_as_string(hide_password=False)
+)
+
 
 # Auth settings (test-safe values)
 os.environ.setdefault("AUTH_JWT_SECRET", "test-secret-do-not-use-in-production")
@@ -20,22 +29,22 @@ os.environ.setdefault("AUTH_JWT_EXP_MINUTES", "60")
 # Global settings (override only if not already set via .env)
 os.environ.setdefault("ENVIRONMENT", "dev")
 
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator  # noqa: E402
 
-import httpx
-import pytest_asyncio
-from httpx import ASGITransport
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.pool import NullPool
+import httpx  # noqa: E402
+import pytest_asyncio  # noqa: E402
+from httpx import ASGITransport  # noqa: E402
+from sqlalchemy import text  # noqa: E402
+from sqlalchemy.ext.asyncio import create_async_engine  # noqa: E402
+from sqlalchemy.pool import NullPool  # noqa: E402
 
 # Import models so Base.metadata knows about all tables
-from src.auth.models import User  # noqa: F401
-from src.main import app
-from src.models import Base
-from src.posts.models import Post  # noqa: F401
-from src.tags.models import Tag  # noqa: F401
-from src.travels.models import Travel  # noqa: F401
+from src.auth.models import User  # noqa: E402,F401
+from src.main import app  # noqa: E402
+from src.models import Base  # noqa: E402
+from src.posts.models import Post  # noqa: E402,F401
+from src.tags.models import Tag  # noqa: E402,F401
+from src.travels.models import Travel  # noqa: E402,F401
 
 
 @pytest_asyncio.fixture
@@ -85,5 +94,6 @@ async def clean_db(test_engine, setup_db):
         await conn.execute(text("DELETE FROM post_tags"))
         await conn.execute(text("DELETE FROM tag"))
         await conn.execute(text("DELETE FROM post"))
+        await conn.execute(text("DELETE FROM media"))
         await conn.execute(text('DELETE FROM "user"'))
         await conn.execute(text("DELETE FROM travel"))

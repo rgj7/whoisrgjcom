@@ -97,6 +97,20 @@ tests/
 >
 > Public `/posts/` endpoints only return posts where `published=True`.
 
+## Running tests
+
+Run backend tests from the `backend/` directory with `uv run` and the root `.env` file:
+
+```bash
+uv run --env-file ../.env pytest
+```
+
+To run a single test file:
+
+```bash
+uv run --env-file ../.env pytest tests/test_media.py
+```
+
 ## Conventions
 
 ### Naming
