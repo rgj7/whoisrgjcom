@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react"
 import type { JSONContent } from "@tiptap/react"
+import { toast } from "sonner"
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit"
@@ -73,7 +74,8 @@ import { useCursorVisibility } from "@/hooks/use-cursor-visibility"
 import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle"
 
 // --- Lib ---
-import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
+import { uploadPostImage } from "@/lib/api"
+import { MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.css"
@@ -192,9 +194,11 @@ const MobileToolbarContent = ({
 export function SimpleEditor({
   content: initialContent,
   onUpdate,
+  authToken,
 }: {
   content?: JSONContent | string
   onUpdate?: (content: JSONContent) => void
+  authToken?: string
 }) {
   const isMobile = useIsBreakpoint()
   const { height } = useWindowSize()
@@ -242,11 +246,27 @@ export function SimpleEditor({
       Subscript,
       Selection,
       ImageUploadNode.configure({
-        accept: "image/*",
+        accept: "image/jpeg,image/png,image/webp",
         maxSize: MAX_FILE_SIZE,
         limit: 3,
-        upload: handleImageUpload,
-        onError: (error) => console.error("Upload failed:", error),
+        upload: async (file, onProgress, signal) => {
+          if (!authToken) {
+            throw new Error("Not authenticated")
+          }
+
+          const media = await uploadPostImage(
+            authToken,
+            file,
+            onProgress,
+            signal
+          )
+          return media.url
+        },
+        onSuccess: () => toast.success("Image uploaded"),
+        onError: (error) =>
+          toast.error(
+            error instanceof Error ? error.message : "Image upload failed"
+          ),
       }),
     ],
     content: initialContent,

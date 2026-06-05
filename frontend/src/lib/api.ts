@@ -50,6 +50,21 @@ export interface SocialLinkInput {
   sort_order: number;
 }
 
+export interface MediaUploadResponse {
+  id: string;
+  url: string;
+  object_name: string;
+  content_type: string;
+  size_bytes: number;
+  width: number;
+  height: number;
+  created_at: string;
+}
+
+export interface UploadProgressEvent {
+  progress: number;
+}
+
 const POST_TIMEOUT_MS = 5_000;
 
 async function fetcher<T>(url: string): Promise<T> {
@@ -202,6 +217,34 @@ export async function updateAdminPost(
     throw new Error(`Failed to update post: ${res.status} ${body}`);
   }
   return res.json();
+}
+
+export async function uploadPostImage(
+  token: string,
+  file: File,
+  onProgress?: (event: UploadProgressEvent) => void,
+  signal?: AbortSignal,
+): Promise<MediaUploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  onProgress?.({ progress: 10 });
+
+  const res = await fetch(`${API_BASE}/admin/media/images`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+    signal,
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Failed to upload post image: ${res.status} ${body}`);
+  }
+
+  const media = (await res.json()) as MediaUploadResponse;
+  onProgress?.({ progress: 100 });
+  return media;
 }
 
 // ─── Travels ──────────────────────────────────────────────────────────

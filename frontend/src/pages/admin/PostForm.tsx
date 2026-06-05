@@ -160,6 +160,7 @@ export function PostForm({ mode, initialData, isSubmitting = false, onSubmit, ex
           <SimpleEditor
             content={content}
             onUpdate={setContent}
+            authToken={authToken}
           />
         </div>
       </form>
