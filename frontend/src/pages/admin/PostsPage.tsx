@@ -5,6 +5,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -55,13 +56,17 @@ export function PostsPage() {
   const handleDelete = async () => {
     if (!deleteId) return;
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      toast.error("Not authenticated");
+      return;
+    }
 
     try {
       await deleteAdminPost(token, deleteId);
+      toast.success("Post deleted successfully");
       await mutate();
-    } catch {
-      // TODO: show error toast
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete post");
     }
     setDeleteId(null);
   };
@@ -136,13 +141,19 @@ export function PostsPage() {
                         className="cursor-pointer"
                         onClick={() => {
                           const token = localStorage.getItem("token");
-                          if (!token) return;
+                          if (!token) {
+                            toast.error("Not authenticated");
+                            return;
+                          }
                           // Toggle published status
                           const newStatus = !post.published;
                           updateAdminPost(token, post.id, { published: newStatus })
-                            .then(() => mutate())
-                            .catch(() => {
-                              // TODO: show error toast
+                            .then(() => {
+                              toast.success(newStatus ? "Post published" : "Post unpublished");
+                              return mutate();
+                            })
+                            .catch((err) => {
+                              toast.error(err instanceof Error ? err.message : "Failed to update post status");
                             });
                         }}
                       >
