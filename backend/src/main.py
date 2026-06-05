@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.auth.router import router as auth_router
 from src.config import settings
+from src.media.admin_router import router as admin_media_router
 from src.posts.admin_router import router as admin_posts_router
 from src.posts.router import router as posts_router
 from src.social_links.router import admin_router as admin_social_links_router
@@ -30,6 +31,7 @@ if settings.CORS_ORIGINS:
 app.include_router(auth_router)
 app.include_router(posts_router)
 app.include_router(admin_posts_router)
+app.include_router(admin_media_router)
 app.include_router(tags_router)
 app.include_router(travels_router)
 app.include_router(admin_travels_router)

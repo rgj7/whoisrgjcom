@@ -19,6 +19,7 @@ from src.config import settings  # noqa: E402
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 from src.auth.models import User  # noqa: E402, F401
+from src.media.models import Media  # noqa: E402, F401
 from src.models import Base  # noqa: E402
 from src.posts.models import Post  # noqa: E402, F401
 from src.social_links.models import SocialLink  # noqa: E402, F401
