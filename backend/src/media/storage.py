@@ -24,11 +24,15 @@ def get_bucket_name() -> str:
 
 
 def build_public_url(object_name: str, bucket_name: str | None = None) -> str:
-    """Build the public GCS URL for an object."""
+    """Build the public URL for an object."""
+    quoted_object_name = quote(object_name, safe="/")
+    if settings.MEDIA_PUBLIC_BASE_URL:
+        return f"{settings.MEDIA_PUBLIC_BASE_URL.rstrip('/')}/{quoted_object_name}"
+
     bucket = bucket_name or get_bucket_name()
     return PUBLIC_GCS_URL_TEMPLATE.format(
         bucket=bucket,
-        object_name=quote(object_name, safe="/"),
+        object_name=quoted_object_name,
     )
 
 

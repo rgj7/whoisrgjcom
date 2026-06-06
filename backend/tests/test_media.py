@@ -8,7 +8,9 @@ from PIL import Image
 from sqlalchemy import select, text
 
 from src.auth.service import hash_password
+from src.config import settings
 from src.media.models import Media
+from src.media.storage import build_public_url
 
 TEST_USER = {
     "username": "mediauser",
@@ -74,6 +76,30 @@ def make_image_bytes(image_format: str, size: tuple[int, int] = (80, 40)) -> byt
     output = BytesIO()
     Image.new("RGB", size, "blue").save(output, format=image_format)
     return output.getvalue()
+
+
+def test_build_public_url_defaults_to_raw_gcs_url(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "MEDIA_PUBLIC_BASE_URL", "")
+
+    url = build_public_url("media/posts/2026/06/test image.webp", bucket_name="test-bucket")
+
+    assert url == "https://storage.googleapis.com/test-bucket/media/posts/2026/06/test%20image.webp"
+
+
+def test_build_public_url_uses_media_public_base_url(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "MEDIA_PUBLIC_BASE_URL", "https://media.whoisrgj.com")
+
+    url = build_public_url("media/posts/2026/06/test.webp", bucket_name="test-bucket")
+
+    assert url == "https://media.whoisrgj.com/media/posts/2026/06/test.webp"
+
+
+def test_build_public_url_quotes_object_name_in_cdn_mode(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "MEDIA_PUBLIC_BASE_URL", "https://media.whoisrgj.com/")
+
+    url = build_public_url("media/posts/2026/06/test image #1.webp", bucket_name="test-bucket")
+
+    assert url == "https://media.whoisrgj.com/media/posts/2026/06/test%20image%20%231.webp"
 
 
 @pytest.mark.asyncio
