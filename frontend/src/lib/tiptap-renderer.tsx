@@ -9,6 +9,7 @@ import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
 import { Node } from "@tiptap/core";
 import { HorizontalRule } from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension";
+import { PostImageLightbox } from "@/components/PostImageLightbox";
 import { createElement } from "react";
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { Extensions, JSONContent } from "@tiptap/core";
@@ -93,6 +94,14 @@ export function renderPostContent(content: JSONContent): React.ReactNode {
         options: {
           nodeMapping: {
             codeBlock: (node: any) => highlightCodeBlock(node),
+            image: (props: any) => {
+              const attrs = props.node.attrs;
+              return createElement(PostImageLightbox, {
+                src: attrs.src,
+                alt: attrs.alt,
+                title: attrs.title,
+              });
+            },
           },
         },
       })}
