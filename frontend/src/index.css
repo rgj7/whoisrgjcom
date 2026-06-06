@@ -14,14 +14,6 @@
 @import "./components/tiptap-node/heading-node/heading-node.css";
 @import "./components/tiptap-node/paragraph-node/paragraph-node.css";
 
-/* Map zoom cursor */
-svg.map-zoom {
-  cursor: grab;
-}
-svg.map-zoom:active {
-  cursor: grabbing;
-}
-
 @layer base {
   :root {
     @apply font-sans;
@@ -37,6 +29,15 @@ svg.map-zoom:active {
 }
 
 @layer components {
+  /* Travels map zoom cursor */
+  .travels-map-zoom {
+    cursor: grab;
+  }
+
+  .travels-map-zoom:active {
+    cursor: grabbing;
+  }
+
   .section-bg-travels {
     background: var(--section-travels-bg);
   }

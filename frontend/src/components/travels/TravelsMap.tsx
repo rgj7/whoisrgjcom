@@ -182,7 +182,7 @@ export function TravelsMap({ visited, bucketlist }: TravelsMapProps) {
 
   return (
     <div ref={containerRef} className="relative w-full aspect-video rounded-xl overflow-hidden border">
-      <svg ref={svgRef} className="w-full h-full map-zoom" />
+      <svg ref={svgRef} className="w-full h-full travels-map-zoom" />
       {tooltip && (
         <div
           className="absolute pointer-events-none z-50 px-3 py-2 rounded-lg shadow-lg text-sm bg-popover text-popover-foreground border"
