@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.dependencies import OptionalCurrentUser
 from src.database import get_db
 from src.posts.exceptions import PostNotFound
 from src.posts.models import Post
@@ -52,16 +53,16 @@ async def list_posts(
 @router.get(
     "/slug/{slug}",
     response_model=PostResponse,
-    summary="Get a published post by slug",
-    description="Returns a single published post by its slug.",
+    summary="Get a post by slug",
+    description="Returns a single post by its slug. Unpublished posts require authentication.",
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
     },
 )
-async def get_post_by_slug(slug: str, db: DbSession):
-    result = await db.execute(select(Post).where(Post.slug == slug, Post.published))
+async def get_post_by_slug(slug: str, db: DbSession, user: OptionalCurrentUser):
+    result = await db.execute(select(Post).where(Post.slug == slug))
     post = result.scalar_one_or_none()
-    if not post:
+    if not post or (not post.published and user is None):
         raise PostNotFound(slug)
     return post
 

@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 import { usePostBySlug } from "@/lib/api";
 import { DefaultLayout } from "@/layouts/DefaultLayout";
 import { renderPostContent } from "@/lib/tiptap-renderer";
@@ -31,7 +32,12 @@ export function PostPage() {
               day: "numeric",
             })}
           </time>
-          <h1 className="text-3xl font-bold">{post.title}</h1>
+          <div className="space-y-3">
+            {!post.published && (
+              <Badge variant="secondary">Unpublished preview</Badge>
+            )}
+            <h1 className="text-3xl font-bold">{post.title}</h1>
+          </div>
           <div className="max-w-none">
             {renderPostContent(post.content)}
           </div>

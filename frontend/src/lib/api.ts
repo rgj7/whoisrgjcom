@@ -68,11 +68,25 @@ export interface UploadProgressEvent {
 const POST_TIMEOUT_MS = 5_000;
 
 async function fetcher<T>(url: string): Promise<T> {
+  return fetchWithOptionalAuth<T>(url, false);
+}
+
+async function authFetcher<T>(url: string): Promise<T> {
+  return fetchWithOptionalAuth<T>(url, true);
+}
+
+async function fetchWithOptionalAuth<T>(url: string, includeAuth: boolean): Promise<T> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), POST_TIMEOUT_MS);
 
+  const headers = new Headers();
+  if (includeAuth) {
+    const token = localStorage.getItem("token");
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+  }
+
   try {
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(url, { signal: controller.signal, headers });
     if (!res.ok) {
       const body = await res.text();
       throw new Error(`Failed to fetch ${url}: ${res.status} ${body}`);
@@ -100,7 +114,7 @@ export function useAdminPosts(page: number = 1, limit: number = 10) {
 }
 
 export function usePostBySlug(slug: string) {
-  return useSWR<Post>(slug ? `${API_BASE}/posts/slug/${slug}` : null, fetcher, {
+  return useSWR<Post>(slug ? `${API_BASE}/posts/slug/${slug}` : null, authFetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 0,
   });

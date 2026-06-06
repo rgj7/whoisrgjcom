@@ -13,6 +13,7 @@ from src.auth.service import get_user_by_id
 from src.database import get_db
 
 bearer_scheme = HTTPBearer()
+optional_bearer_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
@@ -33,6 +34,32 @@ async def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+async def get_optional_current_user(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(optional_bearer_scheme)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> User | None:
+    """Return the current user when a valid Bearer token is present; otherwise None."""
+    if credentials is None:
+        return None
+
+    try:
+        payload = decode_token(credentials.credentials)
+    except InvalidCredentials:
+        return None
+
+    user_id = payload.get("sub")
+    if not user_id:
+        return None
+
+    try:
+        return await get_user_by_id(db, UUID(user_id))
+    except ValueError:
+        return None
+
+
+OptionalCurrentUser = Annotated[User | None, Depends(get_optional_current_user)]
 
 
 def create_access_token(user_id: str, minutes: int | None = None) -> str:

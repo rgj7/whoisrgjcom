@@ -72,6 +72,7 @@ def make_post_data(
     slug: str = "test-post",
     content: dict | None = None,
     excerpt: str | None = None,
+    published: bool | None = None,
 ) -> dict:
     data: dict = {
         "title": title,
@@ -80,6 +81,8 @@ def make_post_data(
     }
     if excerpt is not None:
         data["excerpt"] = excerpt
+    if published is not None:
+        data["published"] = published
     return data
 
 
@@ -119,6 +122,61 @@ async def test_list_posts_returns_all(client: httpx.AsyncClient) -> None:
     data = resp.json()
     assert len(data["items"]) == 3
     assert {p["slug"] for p in data["items"]} == {"alpha", "beta", "gamma"}
+
+
+@pytest.mark.asyncio
+async def test_list_posts_excludes_unpublished(client: httpx.AsyncClient) -> None:
+    headers = await get_auth_header(client)
+    await client.post("/admin/posts/", json=make_post_data(slug="published", published=True), headers=headers)
+    await client.post("/admin/posts/", json=make_post_data(slug="draft", published=False), headers=headers)
+
+    resp = await client.get("/posts/")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert {p["slug"] for p in data["items"]} == {"published"}
+
+
+# --- GET /posts/slug/{slug} ---
+
+
+@pytest.mark.asyncio
+async def test_get_unpublished_post_by_slug_unauthenticated_not_found(client: httpx.AsyncClient) -> None:
+    headers = await get_auth_header(client)
+    await client.post("/admin/posts/", json=make_post_data(slug="draft", published=False), headers=headers)
+
+    resp = await client.get("/posts/slug/draft")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_unpublished_post_by_slug_authenticated(client: httpx.AsyncClient) -> None:
+    headers = await get_auth_header(client)
+    await client.post("/admin/posts/", json=make_post_data(slug="draft", published=False), headers=headers)
+
+    resp = await client.get("/posts/slug/draft", headers=headers)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["slug"] == "draft"
+    assert data["published"] is False
+
+
+@pytest.mark.asyncio
+async def test_get_unpublished_post_by_slug_invalid_token_not_found(client: httpx.AsyncClient) -> None:
+    headers = await get_auth_header(client)
+    await client.post("/admin/posts/", json=make_post_data(slug="draft", published=False), headers=headers)
+
+    resp = await client.get("/posts/slug/draft", headers={"Authorization": "Bearer invalid-token"})
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_published_post_by_slug_invalid_token(client: httpx.AsyncClient) -> None:
+    headers = await get_auth_header(client)
+    await client.post("/admin/posts/", json=make_post_data(slug="published", published=True), headers=headers)
+
+    resp = await client.get("/posts/slug/published", headers={"Authorization": "Bearer invalid-token"})
+    assert resp.status_code == 200
+    assert resp.json()["slug"] == "published"
 
 
 # --- GET /posts/{post_id} ---
