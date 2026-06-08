@@ -4,7 +4,6 @@ version = "0.1.0"
 description = "whoisrgj.com API — FastAPI backend"
 requires-python = ">=3.14"
 dependencies = [
-    "aiosqlite>=0.22.1",
     "alembic>=1.18.4",
     "asyncpg>=0.31.0",
     "bcrypt>=4.2.0",
@@ -14,7 +13,6 @@ dependencies = [
     "pillow>=11.0.0",
     "pydantic-settings>=2.4",
     "pyjwt>=2.9.0",
-    "ruff>=0.15.13",
     "sqlalchemy>=2.0.49",
 ]
 
