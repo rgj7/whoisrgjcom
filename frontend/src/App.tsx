@@ -59,7 +59,7 @@ export function App() {
           element={
             <div
               className={cn(
-                "min-h-screen flex flex-col dark:bg-background",
+                "page-scroll-container flex flex-col dark:bg-background",
                 hasMounted ? "transition-colors duration-500" : "transition-none",
                 sectionBackgroundClass,
               )}

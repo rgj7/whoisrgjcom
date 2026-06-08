@@ -61,7 +61,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }, [navigate, handleLogout]);
 
   return (
-    <div className="min-h-screen">
+    <div className="page-scroll-container">
       <SidebarProvider>
         <Sidebar variant="inset" collapsible="icon">
           <SidebarHeader className="px-4 py-3">

@@ -26,6 +26,18 @@
   body {
     @apply grid min-w-[320px] min-h-screen relative m-0 bg-background text-foreground;
   }
+
+  .page-scroll-container {
+    height: 100vh;
+    overflow-y: auto;
+    scrollbar-gutter: stable both-edges;
+    scrollbar-color: auto transparent;
+  }
+
+  .page-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
 }
 
 @layer components {
