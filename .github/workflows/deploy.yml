@@ -57,7 +57,7 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          source: "docker-compose-prod.yml,Caddyfile"
+          source: "docker-compose-prod.yml,Caddyfile,scripts/backup-postgres.sh,scripts/restore-postgres.sh"
           target: ~/whoisrgjcom/
 
       - name: Deploy to Compute Engine
@@ -68,5 +68,6 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             cd ~/whoisrgjcom
+            chmod +x scripts/backup-postgres.sh scripts/restore-postgres.sh
             docker compose --env-file .env.prod -f docker-compose-prod.yml pull
             docker compose --env-file .env.prod -f docker-compose-prod.yml up -d

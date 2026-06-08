@@ -14,3 +14,6 @@ __pycache__/
 
 # local databases
 *.db
+
+# database backups
+backups/
