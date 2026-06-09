@@ -7,6 +7,7 @@ import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
+import { Youtube } from "@tiptap/extension-youtube";
 import { Node } from "@tiptap/core";
 import { HorizontalRule } from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension";
 import { PostImageLightbox } from "@/components/PostImageLightbox";
@@ -79,6 +80,12 @@ const postExtensions: Extensions = [
   TaskItem.configure({ nested: true }),
   Highlight.configure({ multicolor: true }),
   Image,
+  Youtube.configure({
+    nocookie: true,
+    controls: true,
+    autoplay: false,
+    allowFullscreen: true,
+  }),
   Typography,
   Superscript,
   Subscript,

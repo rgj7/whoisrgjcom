@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react"
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react"
-import type { JSONContent } from "@tiptap/react"
+import type { Editor, JSONContent } from "@tiptap/react"
+import { Fragment, Slice } from "@tiptap/pm/model"
 import { toast } from "sonner"
 
 // --- Tiptap Core Extensions ---
@@ -16,6 +17,7 @@ import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
 import { Selection } from "@tiptap/extensions"
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight"
+import { Youtube, isValidYoutubeUrl } from "@tiptap/extension-youtube"
 import { createLowlight } from "lowlight"
 import { all as allGrammars } from "lowlight"
 
@@ -36,6 +38,7 @@ import "@/components/tiptap-node/code-block-node/code-block-node.css"
 import "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node.css"
 import "@/components/tiptap-node/list-node/list-node.css"
 import "@/components/tiptap-node/image-node/image-node.css"
+import "@/components/tiptap-node/youtube-node/youtube-node.css"
 import "@/components/tiptap-node/heading-node/heading-node.css"
 import "@/components/tiptap-node/paragraph-node/paragraph-node.css"
 
@@ -64,6 +67,7 @@ import { UndoRedoButton } from "@/components/tiptap-ui/undo-redo-button"
 import { ArrowLeftIcon } from "@/components/tiptap-icons/arrow-left-icon"
 import { HighlighterIcon } from "@/components/tiptap-icons/highlighter-icon"
 import { LinkIcon } from "@/components/tiptap-icons/link-icon"
+import { VideoIcon } from "lucide-react"
 
 // --- Hooks ---
 import { useIsBreakpoint } from "@/hooks/use-is-breakpoint"
@@ -80,11 +84,57 @@ import { MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.css"
 
+const YoutubeButton = ({ editor }: { editor: Editor | null }) => {
+  const handleClick = () => {
+    if (!editor) return
+
+    const url = window.prompt("Paste a YouTube URL")
+    const src = url?.trim()
+
+    if (!src) return
+
+    if (!isValidYoutubeUrl(src)) {
+      toast.error("Please enter a valid YouTube URL")
+      return
+    }
+
+    const inserted = editor
+      .chain()
+      .focus()
+      .insertContent([
+        {
+          type: "youtube",
+          attrs: { src },
+        },
+        { type: "paragraph" },
+      ])
+      .run()
+
+    if (!inserted) {
+      toast.error("Could not insert YouTube video")
+    }
+  }
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      tooltip="Add YouTube video"
+      disabled={!editor}
+      onClick={handleClick}
+    >
+      <VideoIcon className="tiptap-button-icon" />
+    </Button>
+  )
+}
+
 const MainToolbarContent = ({
+  editor,
   onHighlighterClick,
   onLinkClick,
   isMobile,
 }: {
+  editor: Editor | null
   onHighlighterClick: () => void
   onLinkClick: () => void
   isMobile: boolean
@@ -149,6 +199,7 @@ const MainToolbarContent = ({
 
       <ToolbarGroup>
         <ImageUploadButton text="Add" />
+        <YoutubeButton editor={editor} />
       </ToolbarGroup>
 
       <Spacer />
@@ -218,6 +269,39 @@ export function SimpleEditor({
         "aria-label": "Main content area, start typing to enter text.",
         class: "simple-editor",
       },
+      handlePaste: (view, event) => {
+        const src = event.clipboardData?.getData("text/plain").trim()
+
+        if (!src || !isValidYoutubeUrl(src)) {
+          return false
+        }
+
+        const youtubeNode = view.state.schema.nodes.youtube
+        const paragraphNode = view.state.schema.nodes.paragraph
+
+        if (!youtubeNode || !paragraphNode) {
+          return false
+        }
+
+        event.preventDefault()
+
+        view.dispatch(
+          view.state.tr
+            .replaceSelection(
+              new Slice(
+                Fragment.fromArray([
+                  youtubeNode.create({ src }),
+                  paragraphNode.create(),
+                ]),
+                0,
+                0
+              )
+            )
+            .scrollIntoView()
+        )
+
+        return true
+      },
     },
     extensions: [
       StarterKit.configure({
@@ -241,6 +325,12 @@ export function SimpleEditor({
       TaskItem.configure({ nested: true }),
       Highlight.configure({ multicolor: true }),
       Image,
+      Youtube.configure({
+        nocookie: true,
+        controls: true,
+        autoplay: false,
+        allowFullscreen: true,
+      }),
       Typography,
       Superscript,
       Subscript,
@@ -315,6 +405,7 @@ export function SimpleEditor({
         >
           {mobileView === "main" ? (
             <MainToolbarContent
+              editor={editor}
               onHighlighterClick={() => setMobileView("highlighter")}
               onLinkClick={() => setMobileView("link")}
               isMobile={isMobile}
