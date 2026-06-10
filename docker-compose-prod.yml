@@ -28,10 +28,10 @@ services:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
+      interval: 2m
+      timeout: 3s
+      retries: 3
+      start_period: 30s
 
   backend:
     image: ghcr.io/rgj7/whoisrgjcom-backend:latest
@@ -44,11 +44,11 @@ services:
     expose:
       - "8000"
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/', timeout=3)\""]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)\""]
+      interval: 2m
+      timeout: 3s
+      retries: 3
+      start_period: 30s
 
   frontend:
     image: ghcr.io/rgj7/whoisrgjcom-frontend:latest
@@ -60,10 +60,10 @@ services:
       - "3000"
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/health || exit 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      interval: 2m
+      timeout: 3s
+      retries: 3
+      start_period: 20s
 
   gcsproxy:
     image: ghcr.io/daichirata/gcsproxy:0.7.0

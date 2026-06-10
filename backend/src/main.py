@@ -39,6 +39,11 @@ app.include_router(social_links_router)
 app.include_router(admin_social_links_router)
 
 
+@app.get("/health", include_in_schema=False)
+async def health():
+    return {"status": "ok"}
+
+
 @app.get("/")
 async def index():
     return "whoisrgj.com API"
