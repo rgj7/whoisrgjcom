@@ -4,7 +4,7 @@ import type { JSONContent } from "@tiptap/react";
 const isLocalhost =
   typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
-export const API_BASE = isLocalhost ? "http://localhost:8000" : "/api";
+export const API_BASE = isLocalhost ? "http://localhost:8000" : "https://api.whoisrgj.com";
 
 export interface Tag {
   id: string;

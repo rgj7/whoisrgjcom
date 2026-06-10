@@ -18,19 +18,18 @@ services:
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+    env_file:
+      - .env.prod
+    expose:
+      - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 20s
 
   backend:
     image: ghcr.io/rgj7/whoisrgjcom-backend:latest
@@ -38,31 +37,31 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB is required}
-      CORS_ORIGINS: ${CORS_ORIGINS}
-      ENVIRONMENT: ${ENVIRONMENT:?ENVIRONMENT is required}
-      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:?AUTH_JWT_SECRET is required}
-      AUTH_JWT_ALG: ${AUTH_JWT_ALG:-HS256}
-      AUTH_JWT_EXP_MINUTES: ${AUTH_JWT_EXP_MINUTES:-60}
-      GCS_BUCKET_NAME: ${GCS_BUCKET_NAME:?GCS_BUCKET_NAME is required}
-      MEDIA_PUBLIC_BASE_URL: ${MEDIA_PUBLIC_BASE_URL:-}
-    ports:
-      - "${BACKEND_PORT:-8000}:8000"
+    env_file:
+      - .env.prod
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/', timeout=3)\""]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   frontend:
     image: ghcr.io/rgj7/whoisrgjcom-frontend:latest
     restart: unless-stopped
     depends_on:
       backend:
-        condition: service_started
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+        condition: service_healthy
+    expose:
+      - "3000"
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/health || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
 volumes:
   postgres_data:
