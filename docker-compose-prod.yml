@@ -14,6 +14,8 @@ services:
     depends_on:
       frontend:
         condition: service_healthy
+      gcsproxy:
+        condition: service_started
         
   postgres:
     image: postgres:17-alpine
@@ -43,7 +45,7 @@ services:
       - "8000"
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/', timeout=3)\""]
-      interval: 5s
+      interval: 30s
       timeout: 5s
       retries: 5
       start_period: 15s
@@ -62,6 +64,17 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  gcsproxy:
+    image: ghcr.io/daichirata/gcsproxy:0.7.0
+    restart: unless-stopped
+    command: [
+      "-b", "0.0.0.0:8080",
+      "-bucket", "${GCS_BUCKET_NAME:?GCS_BUCKET_NAME is required}", 
+      "-cors-origin", "https://blog.whoisrgj.com"
+      ]
+    expose:
+      - "8080"
 
 volumes:
   postgres_data:
